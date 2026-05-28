@@ -1,890 +1,815 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reporte Ejecutivo — Banco Familiar Mayo 2026</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#0a0c10;--bg2:#111318;--bg3:#1a1d24;--card:#161920;--border:#252830;
-  --accent:#e8b84b;--accent2:#4b8be8;--green:#3dd68c;--red:#f05252;
-  --orange:#f5a623;--purple:#a78bfa;--text:#e8eaf0;--muted:#6b7280;--radius:12px;
-}
-*{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard Gastronómico</title>
 
-/* ── HEADER ──────────────────────────────────────────────── */
-.header{
-  background:linear-gradient(135deg,#0d1117 0%,#161b22 50%,#0d1117 100%);
-  border-bottom:1px solid var(--border);padding:18px 40px;
-  display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:100;backdrop-filter:blur(20px);
-}
-.logo{display:flex;align-items:center;gap:14px}
-.logo-icon{
-  width:40px;height:40px;
-  background:linear-gradient(135deg,var(--accent),#c4942a);
-  border-radius:10px;display:flex;align-items:center;justify-content:center;
-  font-family:'Syne',sans-serif;font-weight:800;font-size:17px;color:#0a0c10;
-}
-.logo-text h1{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);letter-spacing:-.01em}
-.logo-text p{font-size:11px;color:var(--muted);margin-top:1px}
-.header-right{display:flex;align-items:center;gap:10px}
-.hbadge{
-  background:rgba(232,184,75,.1);border:1px solid rgba(232,184,75,.28);
-  color:var(--accent);padding:5px 13px;border-radius:20px;font-size:12px;font-weight:500;
-}
-.hbadge2{
-  background:rgba(75,139,232,.1);border:1px solid rgba(75,139,232,.25);
-  color:var(--accent2);padding:5px 13px;border-radius:20px;font-size:12px;font-weight:500;
-}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-/* ── NAV ─────────────────────────────────────────────────── */
-.nav{
-  background:var(--bg2);border-bottom:1px solid var(--border);
-  padding:0 40px;display:flex;gap:2px;overflow-x:auto;
-  scrollbar-width:none;
-}
-.nav::-webkit-scrollbar{display:none}
-.ntab{
-  padding:13px 18px;font-size:13px;font-weight:500;color:var(--muted);
-  cursor:pointer;border-bottom:2px solid transparent;
-  transition:all .18s;white-space:nowrap;display:flex;align-items:center;gap:7px;
-  background:none;border-top:none;border-left:none;border-right:none;font-family:'Inter',sans-serif;
-}
-.ntab:hover{color:var(--text);background:rgba(255,255,255,.03)}
-.ntab.active{color:var(--accent);border-bottom-color:var(--accent)}
-.ndot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
 
-/* ── LAYOUT ──────────────────────────────────────────────── */
-.page{padding:32px 40px;max-width:1320px;margin:0 auto}
-.sec{display:none}.sec.active{display:block}
+    body{
+      background:#f4f6f9;
+      padding:20px;
+      color:#333;
+    }
 
-/* ── SECTION TITLE ───────────────────────────────────────── */
-.sec-title{
-  display:flex;align-items:flex-start;justify-content:space-between;
-  margin-bottom:24px;gap:16px;
-}
-.sec-title h2{
-  font-family:'Syne',sans-serif;font-size:22px;font-weight:700;
-  color:var(--text);letter-spacing:-.02em;
-}
-.sec-title p{font-size:13px;color:var(--muted);margin-top:3px}
-.sec-badge{
-  background:rgba(232,184,75,.1);border:1px solid rgba(232,184,75,.2);
-  color:var(--accent);padding:5px 14px;border-radius:20px;font-size:11px;
-  font-weight:600;white-space:nowrap;letter-spacing:.04em;text-transform:uppercase;
-  flex-shrink:0;margin-top:2px;
-}
+    .container{
+      display:grid;
+      grid-template-columns:250px 1fr;
+      gap:20px;
+    }
 
-/* ── KPI STRIP ───────────────────────────────────────────── */
-.kpi-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-bottom:24px}
-.kpi{
-  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
-  padding:18px 20px;position:relative;overflow:hidden;
-  transition:border-color .2s;
-}
-.kpi:hover{border-color:rgba(232,184,75,.25)}
-.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kc,var(--accent))}
-.kpi-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:600}
-.kpi-val{font-family:'Syne',sans-serif;font-size:34px;font-weight:700;margin:7px 0 3px;color:var(--text);line-height:1}
-.kpi-sub{font-size:11px;color:var(--muted)}
-.kpi-trend{
-  display:inline-flex;align-items:center;gap:3px;
-  padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600;margin-top:7px;
-}
-.tr-g{background:rgba(61,214,140,.13);color:var(--green)}
-.tr-r{background:rgba(240,82,82,.13);color:var(--red)}
-.tr-o{background:rgba(245,166,35,.13);color:var(--orange)}
-.tr-b{background:rgba(75,139,232,.13);color:var(--accent2)}
+    .sidebar{
+      background:white;
+      border-radius:20px;
+      padding:20px;
+      height:calc(100vh - 40px);
+      box-shadow:0 2px 10px rgba(0,0,0,.08);
+    }
 
-/* ── GRID LAYOUTS ────────────────────────────────────────── */
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
-.g21{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px}
-.g12{display:grid;grid-template-columns:1fr 2fr;gap:16px;margin-bottom:20px}
-@media(max-width:960px){.g2,.g3,.g21,.g12{grid-template-columns:1fr}}
+    .sidebar h2{
+      margin-bottom:25px;
+      color:#4b6cb7;
+    }
 
-/* ── CARD ────────────────────────────────────────────────── */
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
-.card-title{
-  font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;
-  letter-spacing:.6px;margin-bottom:16px;display:flex;align-items:center;gap:8px;
-}
-.card-title .ct-badge{
-  font-size:10px;font-weight:500;background:rgba(255,255,255,.05);
-  padding:2px 8px;border-radius:6px;color:var(--muted);text-transform:none;letter-spacing:0;
-}
+    .menu-item{
+      padding:12px;
+      border-radius:10px;
+      margin-bottom:10px;
+      cursor:pointer;
+      transition:.2s;
+    }
 
-/* ── DONUT SVG ───────────────────────────────────────────── */
-.donut-wrap{display:flex;align-items:center;gap:18px}
-.donut-legend{display:flex;flex-direction:column;gap:9px;flex:1}
-.leg-item{display:flex;align-items:center;gap:8px;font-size:12px}
-.leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.leg-label{color:var(--muted);flex:1;font-size:11px}
-.leg-val{color:var(--text);font-weight:600;font-size:12px}
-.leg-pct{color:var(--muted);font-size:10px;margin-left:3px}
+    .menu-item:hover{
+      background:#eef3ff;
+    }
 
-/* ── BAR CHART ───────────────────────────────────────────── */
-.barchart{display:flex;flex-direction:column;gap:9px}
-.bar-row{display:flex;align-items:center;gap:10px}
-.bar-lbl{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0}
-.bar-track{flex:1;background:var(--bg3);border-radius:4px;height:7px;overflow:hidden;min-width:0}
-.bar-fill{height:100%;border-radius:4px;transition:width .7s cubic-bezier(.4,0,.2,1)}
-.bar-n{font-size:11px;color:var(--text);font-weight:600;min-width:26px;text-align:right;flex-shrink:0}
-.bar-pct{font-size:10px;color:var(--muted);min-width:30px;text-align:right;flex-shrink:0}
+    .menu-item.active{
+      background:#dfe9ff;
+      color:#2952cc;
+      font-weight:bold;
+    }
 
-/* ── CIUDAD COBERTURA ────────────────────────────────────── */
-.cov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:20px}
-.cov-card{
-  background:var(--bg3);border:1px solid var(--border);border-radius:10px;
-  padding:14px 16px;position:relative;overflow:hidden;
-}
-.cov-card::after{
-  content:'';position:absolute;bottom:0;left:0;height:3px;
-  background:var(--cc,var(--accent));border-radius:0 0 0 10px;
-  width:var(--cw,0%);transition:width .8s ease;
-}
-.cov-city{font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:500}
-.cov-nums{display:flex;align-items:baseline;gap:4px}
-.cov-big{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text)}
-.cov-tot{font-size:11px;color:var(--muted)}
-.cov-pct{font-size:11px;font-weight:600;margin-top:3px}
+    .content{
+      display:flex;
+      flex-direction:column;
+      gap:20px;
+    }
 
-/* ── HALLAZGOS ───────────────────────────────────────────── */
-.hallazgos{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
-.hz{
-  background:var(--bg3);border:1px solid var(--border);border-radius:10px;
-  padding:14px 18px;display:flex;gap:12px;align-items:flex-start;
-}
-.hz-icon{font-size:16px;flex-shrink:0;margin-top:1px}
-.hz-text{font-size:13px;color:var(--muted);line-height:1.6}
-.hz-text strong{color:var(--text)}
-.hz-text .hl-g{color:var(--green);font-weight:700}
-.hz-text .hl-r{color:var(--red);font-weight:700}
-.hz-text .hl-o{color:var(--orange);font-weight:700}
-.hz-text .hl-a{color:var(--accent);font-weight:700}
+    .top-bar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:20px;
+    }
 
-/* ── ACCION BOX ──────────────────────────────────────────── */
-.actions{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:20px}
-.action-card{
-  border-radius:10px;padding:16px 18px;
-  border-left:3px solid var(--ac,var(--accent));
-  background:var(--bg3);border-top:1px solid var(--border);
-  border-right:1px solid var(--border);border-bottom:1px solid var(--border);
-}
-.action-card h4{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ac,var(--accent));margin-bottom:6px}
-.action-card p{font-size:12px;color:var(--muted);line-height:1.6}
+    .filter-box{
+      background:white;
+      padding:15px;
+      border-radius:15px;
+      box-shadow:0 2px 10px rgba(0,0,0,.08);
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
 
-/* ── DIVIDER ─────────────────────────────────────────────── */
-.div{height:1px;background:var(--border);margin:22px 0}
+    select{
+      padding:10px;
+      border-radius:8px;
+      border:1px solid #ccc;
+    }
 
-/* ── PILLS ───────────────────────────────────────────────── */
-.pill{display:inline-flex;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:500}
-.pg{background:rgba(61,214,140,.1);color:var(--green);border:1px solid rgba(61,214,140,.2)}
-.pr{background:rgba(240,82,82,.1);color:var(--red);border:1px solid rgba(240,82,82,.2)}
-.po{background:rgba(245,166,35,.1);color:var(--orange);border:1px solid rgba(245,166,35,.2)}
-.pb{background:rgba(75,139,232,.1);color:var(--accent2);border:1px solid rgba(75,139,232,.2)}
-.pm{background:rgba(107,114,128,.1);color:var(--muted);border:1px solid rgba(107,114,128,.2)}
+    button{
+      padding:10px 15px;
+      border:none;
+      border-radius:8px;
+      background:#2952cc;
+      color:white;
+      cursor:pointer;
+    }
 
-/* ── NÚMERO GRANDE RESALTADO ─────────────────────────────── */
-.big-stat{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:4px;padding:20px;text-align:center;
-}
-.big-num{font-family:'Syne',sans-serif;font-size:56px;font-weight:800;line-height:1;color:var(--text)}
-.big-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;font-weight:600}
-.big-sub{font-size:12px;color:var(--muted);margin-top:4px}
+    .cards{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:15px;
+    }
 
-/* ── PROGRESS DOBLE ──────────────────────────────────────── */
-.progress-stack{display:flex;flex-direction:column;gap:14px}
-.ps-row{display:flex;flex-direction:column;gap:5px}
-.ps-head{display:flex;justify-content:space-between;align-items:baseline}
-.ps-lbl{font-size:12px;color:var(--muted)}
-.ps-val{font-size:12px;font-weight:700;color:var(--text)}
-.ps-track{height:8px;background:var(--bg);border-radius:4px;overflow:hidden;border:1px solid var(--border)}
-.ps-fill{height:100%;border-radius:4px;transition:width .7s ease}
+    .card{
+      background:white;
+      padding:20px;
+      border-radius:20px;
+      box-shadow:0 2px 10px rgba(0,0,0,.08);
+    }
 
-/* ── MINI TABLE ──────────────────────────────────────────── */
-.mini-table{width:100%;border-collapse:collapse;font-size:12px}
-.mini-table thead th{
-  background:var(--bg3);padding:9px 12px;text-align:left;color:var(--muted);
-  font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;
-  border-bottom:1px solid var(--border);
-}
-.mini-table tbody tr{border-bottom:1px solid var(--border);transition:background .12s}
-.mini-table tbody tr:last-child{border-bottom:none}
-.mini-table tbody tr:hover{background:var(--bg3)}
-.mini-table td{padding:9px 12px;color:var(--text);vertical-align:middle}
-.mini-table td.nm{font-weight:600;color:var(--text)}
-.mini-table td.mu{color:var(--muted);font-size:11px}
+    .card h4{
+      color:#777;
+      margin-bottom:10px;
+      font-size:14px;
+    }
 
-/* ── TIENDAS ESTADO VISUAL ───────────────────────────────── */
-.estado-visual{display:flex;flex-direction:column;gap:10px}
-.ev-row{display:flex;align-items:center;gap:10px}
-.ev-icon{font-size:14px;width:20px;flex-shrink:0;text-align:center}
-.ev-lbl{font-size:12px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ev-bar-wrap{width:110px;flex-shrink:0}
-.ev-track{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;border:1px solid var(--border)}
-.ev-fill{height:100%;border-radius:3px;transition:width .7s ease}
-.ev-n{font-size:11px;font-weight:700;color:var(--text);min-width:22px;text-align:right;flex-shrink:0}
+    .card .value{
+      font-size:32px;
+      font-weight:bold;
+      color:#2952cc;
+    }
 
-/* ── SCROLLBAR ───────────────────────────────────────────── */
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:var(--bg2)}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:var(--muted)}
-</style>
+    .charts{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:20px;
+    }
+
+    .chart-box{
+      background:white;
+      padding:20px;
+      border-radius:20px;
+      box-shadow:0 2px 10px rgba(0,0,0,.08);
+    }
+
+    .table-box{
+      background:white;
+      padding:20px;
+      border-radius:20px;
+      box-shadow:0 2px 10px rgba(0,0,0,.08);
+      overflow:auto;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:15px;
+    }
+
+    table th{
+      background:#f1f4f9;
+      padding:12px;
+      text-align:left;
+    }
+
+    table td{
+      padding:10px;
+      border-bottom:1px solid #eee;
+    }
+
+    .photos-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+      gap:15px;
+      margin-top:20px;
+    }
+
+    .photo-card{
+      background:white;
+      border-radius:15px;
+      overflow:hidden;
+      box-shadow:0 2px 10px rgba(0,0,0,.08);
+    }
+
+    .photo-card img{
+      width:100%;
+      height:120px;
+      object-fit:cover;
+      display:block;
+    }
+
+    .photo-card p{
+      padding:10px;
+      font-size:12px;
+    }
+
+    .loading{
+      text-align:center;
+      padding:50px;
+      font-size:18px;
+      color:#666;
+    }
+
+    @media(max-width:1200px){
+      .cards{
+        grid-template-columns:repeat(2,1fr);
+      }
+
+      .charts{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media(max-width:768px){
+      .container{
+        grid-template-columns:1fr;
+      }
+
+      .cards{
+        grid-template-columns:1fr;
+      }
+    }
+
+  </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="header">
-  <div class="logo">
-    <div class="logo-icon">BF</div>
-    <div class="logo-text">
-      <h1>Reporte Ejecutivo — Relevamiento</h1>
-      <p>+MARKA · Banco Familiar · Interior del país</p>
+<div class="container">
+
+  <div class="sidebar">
+    <h2>Dashboard</h2>
+
+    <div class="menu-item active">Resumen</div>
+    <div class="menu-item">Detalle</div>
+    <div class="menu-item">Fotos</div>
+    <div class="menu-item">Competencia</div>
+  </div>
+
+  <div class="content">
+
+    <div class="top-bar">
+
+      <div class="filter-box">
+        <label>Ciudad:</label>
+
+        <select id="cityFilter">
+          <option value="TODOS">Todas</option>
+        </select>
+
+        <button onclick="resetFilters()">
+          Limpiar
+        </button>
+      </div>
+
     </div>
+
+    <div class="cards">
+
+      <div class="card">
+        <h4>Total Locales Relevados</h4>
+        <div class="value" id="totalLocales">0</div>
+      </div>
+
+      <div class="card">
+        <h4>Con Material BF</h4>
+        <div class="value" id="materialBF">0%</div>
+      </div>
+
+      <div class="card">
+        <h4>Con Material Competencia</h4>
+        <div class="value" id="materialComp">0%</div>
+      </div>
+
+      <div class="card">
+        <h4>Conocen Promo</h4>
+        <div class="value" id="conocenPromo">0%</div>
+      </div>
+
+    </div>
+
+    <div class="charts">
+
+      <div class="chart-box">
+        <canvas id="bfChart"></canvas>
+      </div>
+
+      <div class="chart-box">
+        <canvas id="promoChart"></canvas>
+      </div>
+
+      <div class="chart-box">
+        <canvas id="estadoChart"></canvas>
+      </div>
+
+      <div class="chart-box">
+        <canvas id="compChart"></canvas>
+      </div>
+
+    </div>
+
+    <div class="table-box">
+
+      <h3>Locales Relevados</h3>
+
+      <table>
+        <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Local</th>
+          <th>Ciudad</th>
+          <th>Material BF</th>
+          <th>Conoce Promo</th>
+        </tr>
+        </thead>
+
+        <tbody id="tableBody"></tbody>
+
+      </table>
+
+    </div>
+
+    <div class="table-box">
+
+      <h3>Fotos</h3>
+
+      <div class="photos-grid" id="photosGrid"></div>
+
+    </div>
+
   </div>
-  <div class="header-right">
-    <div class="hbadge2">157 locales</div>
-    <div class="hbadge">Mayo 2026</div>
-  </div>
+
 </div>
-
-<!-- NAV -->
-<nav class="nav">
-  <button class="ntab active" onclick="goSec('resumen',this)">
-    <div class="ndot" style="background:#e8b84b"></div>Resumen Ejecutivo
-  </button>
-  <button class="ntab" onclick="goSec('gastro',this)">
-    <div class="ndot" style="background:#4b8be8"></div>Gastronomía
-  </button>
-  <button class="ntab" onclick="goSec('tiendas',this)">
-    <div class="ndot" style="background:#3dd68c"></div>Tiendas
-  </button>
-  <button class="ntab" onclick="goSec('competencia',this)">
-    <div class="ndot" style="background:#f05252"></div>Competencia
-  </button>
-  <button class="ntab" onclick="goSec('acciones',this)">
-    <div class="ndot" style="background:#a78bfa"></div>Acciones Sugeridas
-  </button>
-</nav>
-
-<div class="page">
-
-<!-- ══════════════════════════════════════════════════════
-     RESUMEN EJECUTIVO
-══════════════════════════════════════════════════════════ -->
-<div class="sec active" id="sec-resumen">
-  <div class="sec-title">
-    <div>
-      <h2>Resumen Ejecutivo</h2>
-      <p>Vista consolidada · 71 locales gastronómicos + 86 tiendas · 12 ciudades · 20–23 mayo 2026</p>
-    </div>
-    <div class="sec-badge">Mayo 2026</div>
-  </div>
-
-  <!-- KPIs principales -->
-  <div class="kpi-strip">
-    <div class="kpi" style="--kc:#e8b84b">
-      <div class="kpi-lbl">Total relevados</div>
-      <div class="kpi-val">157</div>
-      <div class="kpi-sub">71 gastro · 86 tiendas</div>
-    </div>
-    <div class="kpi" style="--kc:#3dd68c">
-      <div class="kpi-lbl">Material BF Gastro</div>
-      <div class="kpi-val">34</div>
-      <div class="kpi-sub">de 71 locales</div>
-      <div class="kpi-trend tr-o">48% cobertura</div>
-    </div>
-    <div class="kpi" style="--kc:#4b8be8">
-      <div class="kpi-lbl">Tiendas con material</div>
-      <div class="kpi-val">79</div>
-      <div class="kpi-sub">de 86 tiendas</div>
-      <div class="kpi-trend tr-g">92% cobertura</div>
-    </div>
-    <div class="kpi" style="--kc:#f05252">
-      <div class="kpi-lbl">Competencia gastro</div>
-      <div class="kpi-val">24</div>
-      <div class="kpi-sub">de 71 locales con mat. rival</div>
-      <div class="kpi-trend tr-r">34% penetración</div>
-    </div>
-    <div class="kpi" style="--kc:#f5a623">
-      <div class="kpi-lbl">Conocen la promo</div>
-      <div class="kpi-val">36</div>
-      <div class="kpi-sub">de 71 encargados gastro</div>
-      <div class="kpi-trend tr-o">51% del total</div>
-    </div>
-    <div class="kpi" style="--kc:#a78bfa">
-      <div class="kpi-lbl">Comp. en tiendas</div>
-      <div class="kpi-val">75</div>
-      <div class="kpi-sub">de 86 con material rival</div>
-      <div class="kpi-trend tr-r">87% exposición</div>
-    </div>
-  </div>
-
-  <!-- Hallazgos clave -->
-  <div class="card" style="margin-bottom:20px">
-    <div class="card-title">📌 Hallazgos clave del período</div>
-    <div class="hallazgos">
-      <div class="hz">
-        <div class="hz-icon">🍽️</div>
-        <div class="hz-text">
-          En gastronomía, solo el <span class="hl-o">48%</span> de los locales cuenta con material BF. Las ciudades de <strong>San Bernardino (71%)</strong> y <strong>Ciudad del Este (62%)</strong> lideran la cobertura; <strong>Villarrica (22%)</strong> y <strong>Concepción (56%)</strong> tienen mayor oportunidad de refuerzo. Cinco ciudades registran 0% de cobertura por ser de visita puntual.
-        </div>
-      </div>
-      <div class="hz">
-        <div class="hz-icon">🏪</div>
-        <div class="hz-text">
-          En tiendas el panorama es favorable: <span class="hl-g">92%</span> tiene material colocado y <span class="hl-g">64%</span> es visible desde la vidriera. Sin embargo, <strong>16 tiendas (19%)</strong> tienen material colocado pero no visible, lo que representa una pérdida de impacto sin necesitar nueva distribución.
-        </div>
-      </div>
-      <div class="hz">
-        <div class="hz-icon">⚔️</div>
-        <div class="hz-text">
-          La competencia más agresiva en gastronomía es <strong>Banco Continental</strong> con presencia en 11 locales. En tiendas, <strong>Itaú</strong> lidera con material en <span class="hl-r">50 de 86 tiendas</span>, seguido de <strong>GNB (33)</strong> y <strong>Otro banco (29)</strong>. El riesgo es alto en ambos segmentos.
-        </div>
-      </div>
-      <div class="hz">
-        <div class="hz-icon">🧠</div>
-        <div class="hz-text">
-          Solo el <span class="hl-o">51%</span> de encargados en gastronomía conoce la promo en detalle. Un <strong>15% la conoce parcialmente</strong> — oportunidad de capacitación. En tiendas, el conocimiento es muy alto: <span class="hl-g">93% (80/86)</span>.
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Doble gráfico resumen -->
-  <div class="g2">
-    <div class="card">
-      <div class="card-title">Cobertura general <span class="ct-badge">Gastro vs Tiendas</span></div>
-      <div class="progress-stack">
-        <div class="ps-row">
-          <div class="ps-head"><span class="ps-lbl">Material BF — Gastronomía</span><span class="ps-val">48% · 34/71</span></div>
-          <div class="ps-track"><div class="ps-fill" style="width:48%;background:#e8b84b"></div></div>
-        </div>
-        <div class="ps-row">
-          <div class="ps-head"><span class="ps-lbl">Sin material — Gastronomía</span><span class="ps-val">52% · 37/71</span></div>
-          <div class="ps-track"><div class="ps-fill" style="width:52%;background:#f05252"></div></div>
-        </div>
-        <div class="div" style="margin:6px 0"></div>
-        <div class="ps-row">
-          <div class="ps-head"><span class="ps-lbl">Material BF — Tiendas</span><span class="ps-val">92% · 79/86</span></div>
-          <div class="ps-track"><div class="ps-fill" style="width:92%;background:#3dd68c"></div></div>
-        </div>
-        <div class="ps-row">
-          <div class="ps-head"><span class="ps-lbl">Visible desde vidriera</span><span class="ps-val">64% · 55/86</span></div>
-          <div class="ps-track"><div class="ps-fill" style="width:64%;background:#4b8be8"></div></div>
-        </div>
-        <div class="ps-row">
-          <div class="ps-head"><span class="ps-lbl">Encargado conoce promo — Tiendas</span><span class="ps-val">93% · 80/86</span></div>
-          <div class="ps-track"><div class="ps-fill" style="width:93%;background:#a78bfa"></div></div>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">Conocimiento de promo <span class="ct-badge">Gastronomía · 71 encargados</span></div>
-      <div id="d-conoce-res"></div>
-    </div>
-  </div>
-
-  <!-- Ciudad grid -->
-  <div class="card-title" style="margin-bottom:12px;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px">
-    📍 Cobertura por ciudad — Gastronomía
-  </div>
-  <div class="cov-grid" id="cov-grid"></div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════
-     GASTRONOMÍA
-══════════════════════════════════════════════════════════ -->
-<div class="sec" id="sec-gastro">
-  <div class="sec-title">
-    <div><h2>Gastronomía — Banco Familiar</h2><p>71 locales · 12 ciudades · Restaurantes, Fast food, Heladerías</p></div>
-    <div class="sec-badge">Hoja RE_BF_GASTRO_INT</div>
-  </div>
-
-  <div class="kpi-strip">
-    <div class="kpi" style="--kc:#e8b84b">
-      <div class="kpi-lbl">Total locales</div><div class="kpi-val">71</div>
-      <div class="kpi-sub">12 ciudades del interior</div>
-    </div>
-    <div class="kpi" style="--kc:#3dd68c">
-      <div class="kpi-lbl">Con material BF</div><div class="kpi-val">34</div>
-      <div class="kpi-sub">48% del total</div><div class="kpi-trend tr-o">48%</div>
-    </div>
-    <div class="kpi" style="--kc:#f05252">
-      <div class="kpi-lbl">Sin material BF</div><div class="kpi-val">37</div>
-      <div class="kpi-sub">52% pendiente</div><div class="kpi-trend tr-r">52%</div>
-    </div>
-    <div class="kpi" style="--kc:#4b8be8">
-      <div class="kpi-lbl">Conocen la promo</div><div class="kpi-val">36</div>
-      <div class="kpi-sub">Si, la conoce bien</div><div class="kpi-trend tr-b">51%</div>
-    </div>
-    <div class="kpi" style="--kc:#f5a623">
-      <div class="kpi-lbl">Parcialmente</div><div class="kpi-val">11</div>
-      <div class="kpi-sub">La conoce parcialmente</div>
-    </div>
-    <div class="kpi" style="--kc:#6b7280">
-      <div class="kpi-lbl">Sin encargado</div><div class="kpi-val">8</div>
-      <div class="kpi-sub">No disponible al relevar</div>
-    </div>
-  </div>
-
-  <div class="g3">
-    <div class="card">
-      <div class="card-title">Presencia de material BF</div>
-      <div id="d-hay-mat"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Estado del material <span class="ct-badge">solo con material</span></div>
-      <div id="d-estado-mat"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Conocimiento de promo</div>
-      <div id="d-conoce-gastro"></div>
-    </div>
-  </div>
-
-  <div class="g21">
-    <div class="card">
-      <div class="card-title">Cobertura por ciudad <span class="ct-badge">con / sin material</span></div>
-      <div id="b-ciudades-gastro"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Distribución por tipo de local</div>
-      <div id="d-tipo-local"></div>
-    </div>
-  </div>
-
-  <!-- Tabla cobertura ciudad -->
-  <div class="card">
-    <div class="card-title">Detalle de cobertura por ciudad</div>
-    <table class="mini-table" id="tbl-ciudad-gastro">
-      <thead><tr>
-        <th>Ciudad</th><th>Total</th><th>Con mat.</th><th>Sin mat.</th><th>Cobertura</th><th>Estado</th>
-      </tr></thead>
-      <tbody id="tbody-ciudad-gastro"></tbody>
-    </table>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════
-     TIENDAS
-══════════════════════════════════════════════════════════ -->
-<div class="sec" id="sec-tiendas">
-  <div class="sec-title">
-    <div><h2>Tiendas — Banco Familiar</h2><p>86 locales comerciales relevados · Indumentaria, deportes y accesorios</p></div>
-    <div class="sec-badge">Hoja RE_BF_TIENDAS</div>
-  </div>
-
-  <div class="kpi-strip">
-    <div class="kpi" style="--kc:#e8b84b">
-      <div class="kpi-lbl">Total tiendas</div><div class="kpi-val">86</div>
-      <div class="kpi-sub">locales comerciales</div>
-    </div>
-    <div class="kpi" style="--kc:#3dd68c">
-      <div class="kpi-lbl">Con material BF</div><div class="kpi-val">79</div>
-      <div class="kpi-sub">92% del total</div><div class="kpi-trend tr-g">92%</div>
-    </div>
-    <div class="kpi" style="--kc:#4b8be8">
-      <div class="kpi-lbl">Visible desde vidriera</div><div class="kpi-val">55</div>
-      <div class="kpi-sub">64% del total</div><div class="kpi-trend tr-b">64%</div>
-    </div>
-    <div class="kpi" style="--kc:#f05252">
-      <div class="kpi-lbl">Con competencia</div><div class="kpi-val">75</div>
-      <div class="kpi-sub">87% tienen rival</div><div class="kpi-trend tr-r">87%</div>
-    </div>
-    <div class="kpi" style="--kc:#a78bfa">
-      <div class="kpi-lbl">Encargado conoce</div><div class="kpi-val">80</div>
-      <div class="kpi-sub">93% del total</div><div class="kpi-trend tr-g">93%</div>
-    </div>
-    <div class="kpi" style="--kc:#f5a623">
-      <div class="kpi-lbl">No visible / mal ub.</div><div class="kpi-val">20</div>
-      <div class="kpi-sub">16 no vis + 4 mal ubic.</div>
-    </div>
-  </div>
-
-  <div class="g2">
-    <div class="card">
-      <div class="card-title">Estado del material <span class="ct-badge">86 tiendas</span></div>
-      <div class="estado-visual" id="ev-tiendas"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Material BF presente</div>
-      <div id="d-tmat"></div>
-    </div>
-  </div>
-
-  <div class="g2">
-    <div class="card">
-      <div class="card-title">Bancos competidores en tiendas <span class="ct-badge">top 6</span></div>
-      <div id="b-bancos-t"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Encargado conoce la promo</div>
-      <div id="d-tconoce"></div>
-    </div>
-  </div>
-
-  <!-- Oportunidades rápidas -->
-  <div class="card">
-    <div class="card-title">⚡ Oportunidades inmediatas en tiendas</div>
-    <div class="hallazgos">
-      <div class="hz">
-        <div class="hz-icon">📍</div>
-        <div class="hz-text"><strong>16 tiendas con material no visible desde la vidriera</strong> — sin necesidad de nueva distribución, solo reubicación del material ya entregado. Impacto inmediato en visibilidad.</div>
-      </div>
-      <div class="hz">
-        <div class="hz-icon">📦</div>
-        <div class="hz-text"><strong>4 tiendas sin material colocado</strong> y <strong>7 con "No aplica"</strong> — verificar con el equipo de campo si aplica la acción o requieren baja del registro.</div>
-      </div>
-      <div class="hz">
-        <div class="hz-icon">🔄</div>
-        <div class="hz-text"><strong>Itaú presente en 50 de 86 tiendas (58%)</strong>. La paridad de material BF es clave: en los locales donde Itaú es visible y BF no lo es, existe pérdida directa de oportunidad comercial.</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════
-     COMPETENCIA
-══════════════════════════════════════════════════════════ -->
-<div class="sec" id="sec-competencia">
-  <div class="sec-title">
-    <div><h2>Análisis de Competencia</h2><p>Presencia de otros bancos en los puntos de venta gastronómicos relevados</p></div>
-    <div class="sec-badge">Hoja RE_COMPE_GASTRO_INT</div>
-  </div>
-
-  <div class="kpi-strip">
-    <div class="kpi" style="--kc:#f05252">
-      <div class="kpi-lbl">Con mat. competencia</div><div class="kpi-val">24</div>
-      <div class="kpi-sub">de 71 locales gastro</div><div class="kpi-trend tr-r">34%</div>
-    </div>
-    <div class="kpi" style="--kc:#3dd68c">
-      <div class="kpi-lbl">Sin mat. competencia</div><div class="kpi-val">47</div>
-      <div class="kpi-sub">zona limpia BF</div><div class="kpi-trend tr-g">66%</div>
-    </div>
-    <div class="kpi" style="--kc:#f5a623">
-      <div class="kpi-lbl">Promo activa rival</div><div class="kpi-val">16</div>
-      <div class="kpi-sub">de 71 locales</div><div class="kpi-trend tr-r">23%</div>
-    </div>
-    <div class="kpi" style="--kc:#e8b84b">
-      <div class="kpi-lbl">Más visible que BF</div><div class="kpi-val">12</div>
-      <div class="kpi-sub">locales de riesgo alto</div>
-    </div>
-    <div class="kpi" style="--kc:#a78bfa">
-      <div class="kpi-lbl">Visibilidad similar</div><div class="kpi-val">8</div>
-      <div class="kpi-sub">paridad con BF</div>
-    </div>
-    <div class="kpi" style="--kc:#4b8be8">
-      <div class="kpi-lbl">Menos visible que BF</div><div class="kpi-val">4</div>
-      <div class="kpi-sub">BF supera a rival</div><div class="kpi-trend tr-g">ventaja</div>
-    </div>
-  </div>
-
-  <div class="g2">
-    <div class="card">
-      <div class="card-title">Presencia de material competencia</div>
-      <div id="d-comp-mat"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Visibilidad competencia vs BF</div>
-      <div id="d-vis-comp"></div>
-    </div>
-  </div>
-
-  <div class="g12">
-    <div class="card">
-      <div class="card-title">Tipos de promo competencia <span class="ct-badge">16 locales con promo</span></div>
-      <div id="d-tpromo-comp"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Marcas identificadas <span class="ct-badge">por presencia</span></div>
-      <div id="b-marcas-comp"></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">⚠️ Locales de atención prioritaria — Competencia más visible que BF</div>
-    <div class="hallazgos" id="locales-riesgo">
-      <!-- renderizado por JS -->
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════
-     ACCIONES SUGERIDAS
-══════════════════════════════════════════════════════════ -->
-<div class="sec" id="sec-acciones">
-  <div class="sec-title">
-    <div><h2>Acciones Sugeridas</h2><p>Prioridades de gestión post-relevamiento según hallazgos del campo</p></div>
-    <div class="sec-badge">Recomendaciones</div>
-  </div>
-
-  <!-- Urgente -->
-  <div class="card" style="border-left:3px solid var(--red);border-radius:0 var(--radius) var(--radius) 0;margin-bottom:16px">
-    <div class="card-title" style="color:var(--red)">🚨 Prioridad Alta — Acción inmediata</div>
-    <div class="actions">
-      <div class="action-card" style="--ac:#f05252">
-        <h4>Reubicación de material</h4>
-        <p>16 tiendas tienen material colocado pero no visible desde la vidriera. Tarea de campo puntual sin costo de distribución adicional.</p>
-      </div>
-      <div class="action-card" style="--ac:#f05252">
-        <h4>Locales sin material — Gastro</h4>
-        <p>37 locales gastronómicos sin material BF. Coordinar con equipo de distribución priorizando Villarrica (7 pendientes) y Encarnación (11 pendientes).</p>
-      </div>
-      <div class="action-card" style="--ac:#f05252">
-        <h4>Continental en 11 locales</h4>
-        <p>Banco Continental supera en visibilidad a BF en 12 locales. Revisar y reforzar material en esos puntos como medida defensiva urgente.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Media -->
-  <div class="card" style="border-left:3px solid var(--orange);border-radius:0 var(--radius) var(--radius) 0;margin-bottom:16px">
-    <div class="card-title" style="color:var(--orange)">⚡ Prioridad Media — Próximas 2 semanas</div>
-    <div class="actions">
-      <div class="action-card" style="--ac:#f5a623">
-        <h4>Capacitación encargados gastro</h4>
-        <p>27 encargados no conocen o conocen parcialmente la promo (38%). Implementar brief rápido o material de apoyo para el encargado in-situ.</p>
-      </div>
-      <div class="action-card" style="--ac:#f5a623">
-        <h4>Itaú en 50 tiendas</h4>
-        <p>Itaú tiene material en el 58% de las tiendas. Auditar los puntos donde BF no es visible y donde Itaú sí lo es para nivelar la presencia visual.</p>
-      </div>
-      <div class="action-card" style="--ac:#f5a623">
-        <h4>Ciudades con 0% cobertura</h4>
-        <p>Caacupé, Coronel Oviedo, Estigarribia, María Auxiliadora, Pedro Juan Caballero y Pilar sin material. Evaluar pertinencia vs costo de distribución.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Baja -->
-  <div class="card" style="border-left:3px solid var(--accent2);border-radius:0 var(--radius) var(--radius) 0">
-    <div class="card-title" style="color:var(--accent2)">📋 Prioridad Normal — Próximo mes</div>
-    <div class="actions">
-      <div class="action-card" style="--ac:#4b8be8">
-        <h4>Seguimiento San Bernardino</h4>
-        <p>71% de cobertura — mejor ciudad gastro. Mantener y apuntar al 100% en los 2 locales faltantes. Modelo a replicar en otras ciudades.</p>
-      </div>
-      <div class="action-card" style="--ac:#4b8be8">
-        <h4>Evaluación material deteriorado</h4>
-        <p>1 caso de material "deteriorado" registrado. Planificar reposición en el próximo ciclo de distribución.</p>
-      </div>
-      <div class="action-card" style="--ac:#4b8be8">
-        <h4>Actualizar base de locales</h4>
-        <p>7 tiendas con estado "No aplica" y 8 encargados no disponibles en gastro. Revisar si corresponde darlos de baja del registro activo.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Resumen de métricas en tabla -->
-  <div class="card" style="margin-top:20px">
-    <div class="card-title">📊 Scorecard de indicadores clave</div>
-    <table class="mini-table">
-      <thead><tr>
-        <th>Indicador</th><th>Segmento</th><th>Valor</th><th>Total</th><th>%</th><th>Estado</th>
-      </tr></thead>
-      <tbody>
-        <tr><td class="nm">Material BF presente</td><td class="mu">Gastronomía</td><td>34</td><td>71</td><td>48%</td><td><span class="pill po">Mejorable</span></td></tr>
-        <tr><td class="nm">Material BF presente</td><td class="mu">Tiendas</td><td>79</td><td>86</td><td>92%</td><td><span class="pill pg">Óptimo</span></td></tr>
-        <tr><td class="nm">Visible desde vidriera</td><td class="mu">Tiendas</td><td>55</td><td>86</td><td>64%</td><td><span class="pill po">Mejorable</span></td></tr>
-        <tr><td class="nm">Encargado conoce promo</td><td class="mu">Gastronomía</td><td>36</td><td>71</td><td>51%</td><td><span class="pill po">Mejorable</span></td></tr>
-        <tr><td class="nm">Encargado conoce promo</td><td class="mu">Tiendas</td><td>80</td><td>86</td><td>93%</td><td><span class="pill pg">Óptimo</span></td></tr>
-        <tr><td class="nm">Competencia con material</td><td class="mu">Gastronomía</td><td>24</td><td>71</td><td>34%</td><td><span class="pill pr">Riesgo</span></td></tr>
-        <tr><td class="nm">Competencia con material</td><td class="mu">Tiendas</td><td>75</td><td>86</td><td>87%</td><td><span class="pill pr">Riesgo alto</span></td></tr>
-        <tr><td class="nm">Rival más visible que BF</td><td class="mu">Gastronomía</td><td>12</td><td>24</td><td>50%</td><td><span class="pill pr">Crítico</span></td></tr>
-        <tr><td class="nm">Promo activa competencia</td><td class="mu">Gastronomía</td><td>16</td><td>71</td><td>23%</td><td><span class="pill po">Monitorear</span></td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-</div><!-- /page -->
 
 <script>
-// ── NAVIGATION ───────────────────────────────────────────
-function goSec(id,el){
-  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('sec-'+id).classList.add('active');
-  if(el)el.classList.add('active');
-}
 
-// ── DONUT SVG ─────────────────────────────────────────────
-function donut(id,items,colors){
-  const el=document.getElementById(id);if(!el)return;
-  const total=items.reduce((s,i)=>s+i.v,0);
-  if(!total){el.innerHTML='<div style="color:var(--muted);padding:20px;text-align:center;font-size:12px">Sin datos</div>';return;}
-  let off=0;const r=48,cx=56,cy=56,circ=2*Math.PI*r;
-  let paths='';
-  items.forEach((item,i)=>{
-    const p=item.v/total,d=p*circ,g=circ-d;
-    paths+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${colors[i%colors.length]}" stroke-width="13" stroke-dasharray="${d} ${g}" stroke-dashoffset="${-off*circ}" transform="rotate(-90 ${cx} ${cy})" opacity=".88"/>`;
-    off+=p;
-  });
-  const svg=`<svg width="112" height="112"><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#1a1d24" stroke-width="13"/>${paths}<text x="${cx}" y="${cy+5}" text-anchor="middle" fill="#e8eaf0" font-size="16" font-family="Syne,sans-serif" font-weight="700">${total}</text></svg>`;
-  const leg=items.map((item,i)=>`<div class="leg-item"><div class="leg-dot" style="background:${colors[i%colors.length]}"></div><span class="leg-label">${item.l}</span><span class="leg-val">${item.v}<span class="leg-pct">(${Math.round(item.v/total*100)}%)</span></span></div>`).join('');
-  el.innerHTML=`<div class="donut-wrap"><svg width="112" height="112" style="flex-shrink:0">${paths.replace(/transform="rotate/g,'transform="rotate')}<text x="${cx}" y="${cy+5}" text-anchor="middle" fill="#e8eaf0" font-size="16" font-family="Syne,sans-serif" font-weight="700">${total}</text></svg><div class="donut-legend">${leg}</div></div>`;
-  // re-render properly
-  el.innerHTML=`<div class="donut-wrap">${svg}<div class="donut-legend">${leg}</div></div>`;
-}
+  // ==========================
+  // CONFIG
+  // ==========================
 
-// ── BAR CHART ─────────────────────────────────────────────
-function bar(id,items,color,lblW){
-  const el=document.getElementById(id);if(!el)return;
-  const max=Math.max(...items.map(i=>i.v),1);
-  const lw=lblW||140;
-  el.innerHTML=`<div class="barchart">${items.map(item=>`
-    <div class="bar-row">
-      <div class="bar-lbl" style="width:${lw}px" title="${item.l}">${item.l}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(item.v/max*100)}%;background:${color}"></div></div>
-      <div class="bar-n">${item.v}</div>
-      ${item.tot?`<div class="bar-pct">${Math.round(item.v/item.tot*100)}%</div>`:''}
-    </div>`).join('')}</div>`;
-}
+  const SHEET_ID = '2PACX-1vR1Y4H9iM_EqiFOBOEU2SRERaH0KfH3dTfdy0DsFTBhBkWeaaaqlmCFwqip1gy010JR9iQn9TZzM06V';
 
-// ── ESTADO VISUAL (tiendas) ───────────────────────────────
-const estIconos={'Sí, visible desde afuera':'✅','Visible pero mal ubicado':'⚠️','Colocado pero no visible desde la vidriera':'🔶','No está colocado':'❌','No aplica':'⬜'};
-const estColors={'Sí, visible desde afuera':'#3dd68c','Visible pero mal ubicado':'#f5a623','Colocado pero no visible desde la vidriera':'#e8b84b','No está colocado':'#f05252','No aplica':'#6b7280'};
+  const BF_URL =
+    `https://opensheet.elk.sh/${SHEET_ID}/RE_BF_GASTRO_INT`;
 
-function estadoVisual(id,items){
-  const el=document.getElementById(id);if(!el)return;
-  const max=Math.max(...items.map(i=>i.v),1);
-  el.innerHTML=items.map(item=>`
-    <div class="ev-row">
-      <div class="ev-icon">${estIconos[item.l]||'▪️'}</div>
-      <div class="ev-lbl">${item.l}</div>
-      <div class="ev-bar-wrap">
-        <div class="ev-track"><div class="ev-fill" style="width:${Math.round(item.v/max*100)}%;background:${estColors[item.l]||'#4b8be8'}"></div></div>
-      </div>
-      <div class="ev-n">${item.v}</div>
-    </div>`).join('');
-}
+  const COMP_URL =
+    `https://opensheet.elk.sh/${SHEET_ID}/RE_COMPE_GASTRO_INT`;
 
-// ── CIUDAD COVERAGE GRID ──────────────────────────────────
-const covData=[
-  {c:'Encarnacion',si:11,tot:22},{c:'Ciudad del Este',si:10,tot:16},
-  {c:'San Bernardino',si:5,tot:7},{c:'Villarrica',si:2,tot:9},
-  {c:'Concepcion',si:5,tot:9},{c:'Saltos del Guaira',si:1,tot:1},
-  {c:'Coronel Oviedo',si:0,tot:2},{c:'Caacupe',si:0,tot:1},
-  {c:'Pedro Juan Caballero',si:0,tot:1},{c:'Pilar',si:0,tot:1},
-  {c:'Maria Auxiliadora',si:0,tot:1},{c:'Dr J.E. Estigarribia',si:0,tot:1},
-];
-function covColor(pct){
-  if(pct>=70)return'#3dd68c';
-  if(pct>=40)return'#e8b84b';
-  if(pct>0)return'#f5a623';
-  return'#f05252';
-}
-function renderCovGrid(){
-  const el=document.getElementById('cov-grid');
-  el.innerHTML=covData.map(d=>{
-    const pct=Math.round(d.si/d.tot*100);
-    const cc=covColor(pct);
-    return`<div class="cov-card" style="--cc:${cc};--cw:${pct}%">
-      <div class="cov-city">📍 ${d.c}</div>
-      <div class="cov-nums"><div class="cov-big">${d.si}</div><div class="cov-tot"> / ${d.tot}</div></div>
-      <div class="cov-pct" style="color:${cc}">${pct}%</div>
-    </div>`;
-  }).join('');
-}
+  let bfData = [];
+  let compData = [];
 
-// ── CIUDAD TABLE ──────────────────────────────────────────
-function renderCiudadTable(){
-  const el=document.getElementById('tbody-ciudad-gastro');
-  el.innerHTML=covData.map(d=>{
-    const pct=Math.round(d.si/d.tot*100);
-    const cc=covColor(pct);
-    const pill=pct>=70?'<span class="pill pg">Bueno</span>':pct>=40?'<span class="pill po">Regular</span>':pct>0?'<span class="pill pr">Bajo</span>':'<span class="pill pm">Sin datos</span>';
-    return`<tr>
-      <td class="nm">${d.c}</td><td>${d.tot}</td><td style="color:var(--green)">${d.si}</td>
-      <td style="color:var(--red)">${d.tot-d.si}</td>
-      <td><div style="display:flex;align-items:center;gap:8px"><div style="width:70px;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;border:1px solid var(--border)"><div style="width:${pct}%;height:100%;background:${cc};border-radius:3px"></div></div><span style="font-size:11px;font-weight:700;color:${cc}">${pct}%</span></div></td>
-      <td>${pill}</td>
-    </tr>`;
-  }).join('');
-}
+  let bfChart;
+  let promoChart;
+  let estadoChart;
+  let compChart;
 
-// ── LOCALES EN RIESGO ─────────────────────────────────────
-const localesRiesgo=[
-  {local:'PLAZA CENTRAL PJC',ciudad:'Pedro Juan Caballero',marcas:'Banco Continental',vis:'Mayor visibilidad que Banco Familiar'},
-  {local:'RESTAURANTE SALERO',ciudad:'Encarnacion',marcas:'GNB, Continental',vis:'Visibilidad similar a Banco Familiar'},
-  {local:'RESTAURANTE CENTRAL CONCEPCION',ciudad:'Concepcion',marcas:'Banco Itau, GNB',vis:'Visibilidad similar a Banco Familiar'},
-  {local:'BURGER KING SALTOS DEL GUAIRA',ciudad:'Saltos del Guaira',marcas:'Banco Continental, Banco Itau, Banco GNB',vis:'Visibilidad similar a Banco Familiar'},
-];
-function renderLocalesRiesgo(){
-  const el=document.getElementById('locales-riesgo');
-  el.innerHTML=localesRiesgo.map(r=>`
-    <div class="hz">
-      <div class="hz-icon">🔴</div>
-      <div class="hz-text">
-        <strong>${r.local}</strong> · <span style="color:var(--muted)">${r.ciudad}</span><br>
-        <span class="pill pr" style="margin-top:4px;font-size:10px">${r.vis}</span>
-        <span style="color:var(--muted);font-size:11px;margin-left:8px">${r.marcas}</span>
-      </div>
-    </div>`).join('');
-}
+  // ==========================
+  // INIT
+  // ==========================
 
-// ── INIT ──────────────────────────────────────────────────
-function init(){
-  // Resumen
-  donut('d-conoce-res',
-    [{l:'Conoce bien',v:36},{l:'Parcialmente',v:11},{l:'No conoce',v:16},{l:'Sin encargado',v:8}],
-    ['#3dd68c','#f5a623','#f05252','#6b7280']);
-  renderCovGrid();
+  async function init(){
 
-  // Gastro
-  donut('d-hay-mat',[{l:'Con material',v:34},{l:'Sin material',v:37}],['#3dd68c','#f05252']);
-  donut('d-estado-mat',
-    [{l:'En perfecto estado',v:29},{l:'Sin colocar',v:3},{l:'Poco visible',v:1},{l:'Deteriorado',v:1}],
-    ['#3dd68c','#f5a623','#e8b84b','#f05252']);
-  donut('d-conoce-gastro',
-    [{l:'Conoce bien',v:36},{l:'Parcialmente',v:11},{l:'No conoce',v:16},{l:'Sin encargado',v:8}],
-    ['#3dd68c','#f5a623','#f05252','#6b7280']);
-  bar('b-ciudades-gastro',
-    [{l:'Encarnacion',v:11,tot:22},{l:'Ciudad del Este',v:10,tot:16},{l:'San Bernardino',v:5,tot:7},
-     {l:'Concepcion',v:5,tot:9},{l:'Villarrica',v:2,tot:9},{l:'Saltos del Guaira',v:1,tot:1},
-     {l:'Coronel Oviedo',v:0,tot:2},{l:'Caacupe',v:0,tot:1},{l:'PJ Caballero',v:0,tot:1},
-     {l:'Pilar',v:0,tot:1},{l:'Maria Auxiliadora',v:0,tot:1},{l:'Dr. J.E. Estigarribia',v:0,tot:1}],
-    '#e8b84b',170);
-  donut('d-tipo-local',[{l:'Restaurante',v:35},{l:'Fast food',v:34},{l:'Otros',v:2}],['#4b8be8','#e8b84b','#a78bfa']);
-  renderCiudadTable();
+    try{
 
-  // Tiendas
-  estadoVisual('ev-tiendas',[
-    {l:'Sí, visible desde afuera',v:55},
-    {l:'Colocado pero no visible',v:16},
-    {l:'No aplica',v:7},
-    {l:'Visible pero mal ubicado',v:4},
-    {l:'No está colocado',v:4},
-  ]);
-  donut('d-tmat',[{l:'Con material',v:79},{l:'Sin material',v:7}],['#3dd68c','#f05252']);
-  bar('b-bancos-t',
-    [{l:'Itaú',v:50},{l:'GNB',v:33},{l:'Otro banco',v:29},{l:'Continental',v:13},{l:'Ueno',v:6},{l:'Sudameris',v:2}],
-    '#f05252',110);
-  donut('d-tconoce',[{l:'Sí conoce',v:80},{l:'No conoce',v:4},{l:'No verificado',v:2}],['#3dd68c','#f05252','#6b7280']);
+      showLoading();
 
-  // Competencia
-  donut('d-comp-mat',[{l:'Con material comp.',v:24},{l:'Sin material comp.',v:47}],['#f05252','#3dd68c']);
-  donut('d-vis-comp',
-    [{l:'Más visible que BF',v:12},{l:'Visibilidad similar',v:8},{l:'Menos visible que BF',v:4}],
-    ['#f05252','#f5a623','#3dd68c']);
-  donut('d-tpromo-comp',
-    [{l:'Cashback / reintegro',v:6},{l:'Promo fin de semana',v:6},{l:'Ambas',v:2},{l:'Descuento tarjeta',v:1},{l:'Otra',v:1}],
-    ['#f5a623','#4b8be8','#a78bfa','#f05252','#6b7280']);
-  bar('b-marcas-comp',
-    [{l:'Continental',v:11},{l:'GNB',v:4},{l:'Sudameris / Interfisa',v:4},{l:'Interfisa',v:3},{l:'Ueno Bank',v:2},{l:'Otros',v:2}],
-    '#f05252',150);
-  renderLocalesRiesgo();
-}
+      const [bfRes, compRes] = await Promise.all([
+        fetch(BF_URL),
+        fetch(COMP_URL)
+      ]);
 
-document.addEventListener('DOMContentLoaded',init);
+      const bfJson = await bfRes.json();
+      const compJson = await compRes.json();
+
+      bfData = getUniqueByLocal(
+        mapBFData(bfJson)
+      );
+
+      compData = getUniqueByLocal(
+        mapCompData(compJson)
+      );
+
+      populateCities();
+
+      renderDashboard();
+
+    }catch(error){
+
+      console.error(error);
+
+      alert('Error cargando datos');
+
+    }
+
+  }
+
+  // ==========================
+  // MAPPERS
+  // ==========================
+
+  function mapBFData(data){
+
+    return data.map(row => ({
+      fecha: row["FECHA"] || "",
+      local: row["LOCAL"] || "",
+      ciudad: row["CIUDAD"] || "",
+      hayMaterial: normalize(row["HAY_MATERIAL_DESIGNADO"]),
+      materiales: row["MATERIALES_COLOCADOS"] || "",
+      estadoMaterial: row["MATERIAL_CORRESPONDE_TIPO"] || "SIN DATO",
+      conocePromo: normalize(row["ENCARGADO_CONOCE_PROMO"]),
+      observaciones: row["OBSERVACIONES"] || "",
+
+      fotos:[
+        row["FOTO_MATERIAL_1"],
+        row["FOTO_MATERIAL_2"],
+        row["FOTO_MATERIAL_3"],
+        row["FOTO_AUSENCIA"],
+        row["FOTO_ANTERIOR_1"]
+      ].filter(Boolean)
+
+    }));
+
+  }
+
+  function mapCompData(data){
+
+    return data.map(row => ({
+      fecha: row["FECHA"] || "",
+      local: row["LOCAL"] || "",
+      ciudad: row["CIUDAD"] || "",
+      hayCompetencia: normalize(row["HAY_MATERIAL_COMPETENCIA"]),
+      marcas: row["MARCAS_IDENTIFICADAS"] || "",
+
+      fotos:[
+        row["FOTO_1"],
+        row["FOTO_2"],
+        row["FOTO_3"]
+      ].filter(Boolean)
+
+    }));
+
+  }
+
+  // ==========================
+  // DEDUPLICATION
+  // ==========================
+
+  function getUniqueByLocal(data){
+
+    const seen = new Set();
+
+    return data.filter(item => {
+
+      const local = item.local?.trim().toUpperCase();
+
+      if(!local) return false;
+
+      if(seen.has(local)){
+        return false;
+      }
+
+      seen.add(local);
+
+      return true;
+
+    });
+
+  }
+
+  // ==========================
+  // HELPERS
+  // ==========================
+
+  function normalize(value){
+
+    return String(value || "")
+      .trim()
+      .toUpperCase();
+
+  }
+
+  function percent(part,total){
+
+    if(total === 0) return 0;
+
+    return Math.round((part / total) * 100);
+
+  }
+
+  function convertDriveUrl(url){
+
+    if(!url) return '';
+
+    if(url.includes('id=')){
+
+      const id = url.split('id=')[1].split('&')[0];
+
+      return `https://drive.google.com/thumbnail?id=${id}`;
+
+    }
+
+    const match = url.match(/\/d\/(.*?)\//);
+
+    if(match && match[1]){
+
+      return `https://drive.google.com/thumbnail?id=${match[1]}`;
+
+    }
+
+    return url;
+
+  }
+
+  function showLoading(){
+
+    document.body.innerHTML =
+      `<div class="loading">Cargando dashboard...</div>`;
+
+  }
+
+  function resetFilters(){
+
+    document.getElementById('cityFilter').value = 'TODOS';
+
+    renderDashboard();
+
+  }
+
+  // ==========================
+  // FILTERS
+  // ==========================
+
+  function populateCities(){
+
+    const cities = [
+      ...new Set(
+        bfData.map(i => i.ciudad).filter(Boolean)
+      )
+    ];
+
+    const select =
+      document.getElementById('cityFilter');
+
+    cities.sort().forEach(city => {
+
+      const option = document.createElement('option');
+
+      option.value = city;
+      option.textContent = city;
+
+      select.appendChild(option);
+
+    });
+
+    select.addEventListener('change', renderDashboard);
+
+  }
+
+  function getFilteredData(){
+
+    const city =
+      document.getElementById('cityFilter').value;
+
+    let filteredBF = [...bfData];
+    let filteredComp = [...compData];
+
+    if(city !== 'TODOS'){
+
+      filteredBF =
+        filteredBF.filter(i => i.ciudad === city);
+
+      filteredComp =
+        filteredComp.filter(i => i.ciudad === city);
+
+    }
+
+    return {
+      filteredBF,
+      filteredComp
+    };
+
+  }
+
+  // ==========================
+  // RENDER
+  // ==========================
+
+  function renderDashboard(){
+
+    const {
+      filteredBF,
+      filteredComp
+    } = getFilteredData();
+
+    renderKPIs(filteredBF, filteredComp);
+
+    renderCharts(filteredBF, filteredComp);
+
+    renderTable(filteredBF);
+
+    renderPhotos(filteredBF);
+
+  }
+
+  // ==========================
+  // KPIS
+  // ==========================
+
+  function renderKPIs(bf, comp){
+
+    const totalLocales = bf.length;
+
+    const materialBF =
+      bf.filter(i => i.hayMaterial === 'SI').length;
+
+    const conocenPromo =
+      bf.filter(i => i.conocePromo === 'SI').length;
+
+    const materialComp =
+      comp.filter(i => i.hayCompetencia === 'SI').length;
+
+    document.getElementById('totalLocales')
+      .textContent = totalLocales;
+
+    document.getElementById('materialBF')
+      .textContent =
+      percent(materialBF,totalLocales) + '%';
+
+    document.getElementById('conocenPromo')
+      .textContent =
+      percent(conocenPromo,totalLocales) + '%';
+
+    document.getElementById('materialComp')
+      .textContent =
+      percent(materialComp,comp.length) + '%';
+
+  }
+
+  // ==========================
+  // CHARTS
+  // ==========================
+
+  function renderCharts(bf, comp){
+
+    if(bfChart) bfChart.destroy();
+    if(promoChart) promoChart.destroy();
+    if(estadoChart) estadoChart.destroy();
+    if(compChart) compChart.destroy();
+
+    // BF
+
+    const bfYes =
+      bf.filter(i => i.hayMaterial === 'SI').length;
+
+    const bfNo = bf.length - bfYes;
+
+    bfChart = new Chart(
+      document.getElementById('bfChart'),
+      {
+        type:'doughnut',
+        data:{
+          labels:['SI','NO'],
+          datasets:[{
+            data:[bfYes,bfNo]
+          }]
+        }
+      }
+    );
+
+    // PROMO
+
+    const promoYes =
+      bf.filter(i => i.conocePromo === 'SI').length;
+
+    const promoNo =
+      bf.length - promoYes;
+
+    promoChart = new Chart(
+      document.getElementById('promoChart'),
+      {
+        type:'pie',
+        data:{
+          labels:['SI','NO'],
+          datasets:[{
+            data:[promoYes,promoNo]
+          }]
+        }
+      }
+    );
+
+    // ESTADO
+
+    const estadoMap = {};
+
+    bf.forEach(item => {
+
+      const estado =
+        item.estadoMaterial || 'SIN DATO';
+
+      estadoMap[estado] =
+        (estadoMap[estado] || 0) + 1;
+
+    });
+
+    estadoChart = new Chart(
+      document.getElementById('estadoChart'),
+      {
+        type:'bar',
+        data:{
+          labels:Object.keys(estadoMap),
+          datasets:[{
+            label:'Cantidad',
+            data:Object.values(estadoMap)
+          }]
+        }
+      }
+    );
+
+    // COMPETENCIA
+
+    const compYes =
+      comp.filter(i =>
+        i.hayCompetencia === 'SI'
+      ).length;
+
+    const compNo =
+      comp.length - compYes;
+
+    compChart = new Chart(
+      document.getElementById('compChart'),
+      {
+        type:'doughnut',
+        data:{
+          labels:['SI','NO'],
+          datasets:[{
+            data:[compYes,compNo]
+          }]
+        }
+      }
+    );
+
+  }
+
+  // ==========================
+  // TABLE
+  // ==========================
+
+  function renderTable(data){
+
+    const tbody =
+      document.getElementById('tableBody');
+
+    tbody.innerHTML = '';
+
+    data.forEach(item => {
+
+      const tr = document.createElement('tr');
+
+      tr.innerHTML = `
+        <td>${item.fecha}</td>
+        <td>${item.local}</td>
+        <td>${item.ciudad}</td>
+        <td>${item.hayMaterial}</td>
+        <td>${item.conocePromo}</td>
+      `;
+
+      tbody.appendChild(tr);
+
+    });
+
+  }
+
+  // ==========================
+  // PHOTOS
+  // ==========================
+
+  function renderPhotos(data){
+
+    const grid =
+      document.getElementById('photosGrid');
+
+    grid.innerHTML = '';
+
+    data.forEach(item => {
+
+      item.fotos.forEach(photo => {
+
+        const imgUrl =
+          convertDriveUrl(photo);
+
+        const card =
+          document.createElement('div');
+
+        card.className = 'photo-card';
+
+        card.innerHTML = `
+          <a href="${photo}" target="_blank">
+            <img
+              loading="lazy"
+              src="${imgUrl}"
+              onerror="this.src='https://via.placeholder.com/150?text=Sin+Imagen'"
+            />
+          </a>
+
+          <p>${item.local}</p>
+        `;
+
+        grid.appendChild(card);
+
+      });
+
+    });
+
+  }
+
+  // ==========================
+  // START
+  // ==========================
+
+  init();
+
 </script>
+
 </body>
 </html>
