@@ -3,960 +3,1347 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Dashboard Gastronómico</title>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+<title>Dashboard Relevamiento — Banco Familiar</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:Arial, sans-serif;
+:root{
+  --bf:#003F8A;--bf2:#1565C0;--bf-l:#E8F0FB;--bf-p:#F0F5FF;
+  --acc:#0096FF;--ok:#0D7A43;--ok-l:#E3F5EC;
+  --warn:#B86A0A;--warn-l:#FEF3E2;
+  --err:#B91C1C;--err-l:#FEE9E9;
+  --bg:#F2F5FC;--sur:#fff;--sur2:#F7F9FF;
+  --bdr:#E2E8F4;--bdr2:#C8D5EC;
+  --tx:#0C1A33;--tx2:#44536B;--tx3:#8697AE;
+  --sh1:0 1px 3px rgba(0,40,120,.08),0 1px 2px rgba(0,40,120,.05);
+  --sh2:0 4px 18px rgba(0,40,120,.12),0 2px 6px rgba(0,40,120,.07);
+  --sh3:0 10px 36px rgba(0,40,120,.16),0 4px 12px rgba(0,40,120,.09);
+  --r:10px;--rl:16px;--rxl:22px;--sb:224px;
 }
-
-body{
-  background:#f4f6f9;
-  padding:20px;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);font-size:14px;line-height:1.6;min-height:100vh}
+.shell{display:flex;min-height:100vh}
+.sidebar{width:var(--sb);min-height:100vh;background:var(--bf);position:fixed;top:0;left:0;z-index:200;display:flex;flex-direction:column;transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.main{margin-left:var(--sb);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.sb-brand{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px}
+.sb-mark{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#fff;letter-spacing:-.02em;line-height:1}
+.sb-mark span{color:#5BB8FF}
+.sb-sub{font-size:9px;color:rgba(255,255,255,.4);letter-spacing:.14em;text-transform:uppercase;margin-top:2px}
+.sb-dot{width:8px;height:8px;border-radius:50%;background:#5BB8FF;flex-shrink:0;box-shadow:0 0 8px rgba(91,184,255,.6)}
+.sb-nav{padding:12px 0;flex:1;overflow-y:auto}
+.sb-sec{font-size:9px;color:rgba(255,255,255,.3);letter-spacing:.16em;text-transform:uppercase;padding:14px 18px 5px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 18px;color:rgba(255,255,255,.6);font-size:13px;cursor:pointer;transition:all .15s;border-left:3px solid transparent;text-decoration:none}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,.08)}
+.nav-item.active{color:#fff;background:rgba(255,255,255,.13);border-left-color:#5BB8FF;font-weight:500}
+.nav-item .ico{width:17px;text-align:center;font-size:14px;flex-shrink:0}
+.sb-foot{padding:14px 18px;border-top:1px solid rgba(255,255,255,.08);font-size:10px;color:rgba(255,255,255,.28);line-height:1.6}
+.topbar{background:var(--sur);border-bottom:1px solid var(--bdr);padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--sh1)}
+.tb-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--bf)}
+.tb-sub{font-size:11px;color:var(--tx3)}
+.tb-right{display:flex;align-items:center;gap:10px}
+.upd{font-size:11px;color:var(--tx3);background:var(--sur2);border:1px solid var(--bdr);border-radius:20px;padding:4px 12px;white-space:nowrap}
+.btn-rel{font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 14px;background:var(--bf);color:#fff;border:none;border-radius:8px;cursor:pointer;transition:background .15s;display:flex;align-items:center;gap:5px}
+.btn-rel:hover{background:var(--bf2)}
+.hamburger{display:none;background:none;border:none;cursor:pointer;padding:4px;flex-direction:column;gap:4px}
+.hamburger span{display:block;width:20px;height:2px;background:var(--bf);border-radius:2px}
+.view-tabs{background:var(--sur);border-bottom:2px solid var(--bdr);padding:0 28px;display:flex;gap:0}
+.vtab{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:13px 22px;border:none;background:transparent;color:var(--tx2);cursor:pointer;display:flex;align-items:center;gap:8px;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .18s;white-space:nowrap}
+.vtab:hover{color:var(--bf);background:var(--bf-p)}
+.vtab.active{color:var(--bf);border-bottom-color:var(--bf);font-weight:600}
+.vtab-ico{font-size:15px}
+#loader{position:fixed;inset:0;background:var(--bf);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .5s}
+#loader.hidden{opacity:0;pointer-events:none}
+.ld-logo{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;color:#fff;letter-spacing:-.02em}
+.ld-logo span{color:#5BB8FF}
+.ld-track{width:280px;height:3px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden}
+.ld-fill{height:100%;width:0%;background:linear-gradient(90deg,#5BB8FF,#fff);border-radius:3px;transition:width .35s ease}
+.ld-txt{font-size:13px;color:rgba(255,255,255,.55);text-align:center;max-width:340px}
+.page-body{padding:26px;flex:1}
+.section{display:none}.section.active{display:block}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:14px;margin-bottom:22px}
+.kpi{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--rl);padding:20px;position:relative;overflow:hidden;box-shadow:var(--sh1);transition:transform .2s,box-shadow .2s;cursor:default}
+.kpi:hover{transform:translateY(-2px);box-shadow:var(--sh2)}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kc,var(--bf))}
+.kpi-ico{width:34px;height:34px;border-radius:9px;background:var(--kb,var(--bf-l));display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:11px}
+.kpi-val{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:var(--tx);line-height:1}
+.kpi-lbl{font-size:11px;color:var(--tx2);margin-top:5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.kpi-sub{font-size:11px;color:var(--tx3);margin-top:2px}
+.kpi.c-blue{--kc:var(--bf);--kb:var(--bf-l)}
+.kpi.c-green{--kc:var(--ok);--kb:var(--ok-l)}
+.kpi.c-amber{--kc:var(--warn);--kb:var(--warn-l)}
+.kpi.c-red{--kc:var(--err);--kb:var(--err-l)}
+.kpi.c-acc{--kc:var(--acc);--kb:rgba(0,150,255,.1)}
+.kpi.c-purple{--kc:#7C3AED;--kb:#F5F0FF}
+.cg2{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:20px}
+.cg3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.cg4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.cg2b{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.cc{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--rl);padding:20px;box-shadow:var(--sh1)}
+.cc.full{grid-column:1/-1}
+.cc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.cc-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--tx)}
+.cc-badge{font-size:10px;padding:2px 9px;border-radius:20px;background:var(--bf-l);color:var(--bf);font-weight:700;letter-spacing:.05em}
+.flt{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--rl);padding:16px 20px;margin-bottom:18px;box-shadow:var(--sh1)}
+.flt-label{font-size:11px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.flt-row{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:11px;color:var(--tx2);font-weight:600}
+.fc{font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 12px;border:1px solid var(--bdr2);border-radius:8px;background:var(--sur2);color:var(--tx);outline:none;transition:border-color .15s;min-width:180px}
+.fc:focus{border-color:var(--bf2);box-shadow:0 0 0 3px rgba(0,63,138,.1)}
+.btn-c{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:8px 16px;border-radius:8px;border:1px solid var(--bdr2);background:transparent;color:var(--tx2);cursor:pointer;transition:all .15s}
+.btn-c:hover{border-color:var(--bf);color:var(--bf)}
+.btn-xl{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:8px 16px;border-radius:8px;border:none;background:var(--ok);color:#fff;cursor:pointer;transition:background .15s;display:inline-flex;align-items:center;gap:5px}
+.btn-xl:hover{background:#0a6e3b}
+.tw{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--rl);box-shadow:var(--sh1);overflow:hidden}
+.tbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--bdr);gap:12px;flex-wrap:wrap}
+.tbar-l{display:flex;align-items:center;gap:10px}
+.tt{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--tx)}
+.tc{font-size:11px;color:var(--tx3);background:var(--sur2);border:1px solid var(--bdr);padding:3px 10px;border-radius:20px}
+.srch{display:flex;align-items:center;gap:7px;background:var(--sur2);border:1px solid var(--bdr2);border-radius:8px;padding:6px 12px}
+.srch input{font-family:'DM Sans',sans-serif;font-size:13px;border:none;background:transparent;outline:none;color:var(--tx);width:200px}
+.tsx{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:820px}
+thead tr{background:var(--bf-p)}
+thead th{text-align:left;padding:10px 13px;font-size:10px;font-weight:700;color:var(--bf);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap;border-bottom:2px solid var(--bdr);cursor:pointer;user-select:none;transition:background .1s}
+thead th:hover{background:var(--bf-l)}
+thead th.sa::after{content:' ↑';opacity:.6}
+thead th.sd::after{content:' ↓';opacity:.6}
+tbody tr{border-bottom:1px solid var(--bdr);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--bf-p)}
+td{padding:9px 13px;font-size:13px;color:var(--tx);vertical-align:middle}
+td.nm{font-weight:500;color:var(--tx)}
+td.obs{color:var(--tx2);font-size:12px;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+td.dt{font-size:12px;color:var(--tx3);white-space:nowrap}
+td.ciudad{font-size:12px;font-weight:500;color:var(--bf2)}
+.empty-row td{text-align:center;padding:40px;color:var(--tx3);font-style:italic}
+.pill{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;letter-spacing:.02em}
+.p-g{background:var(--ok-l);color:var(--ok)}
+.p-r{background:var(--err-l);color:var(--err)}
+.p-a{background:var(--warn-l);color:var(--warn)}
+.p-b{background:var(--bf-l);color:var(--bf)}
+.p-x{background:#F1F4F9;color:var(--tx3)}
+.p-p{background:#F5F0FF;color:#7C3AED}
+.sec-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:16px}
+.sec-lbl{font-size:11px;color:var(--bf);font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px}
+.sec-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--tx)}
+.pgn{display:flex;align-items:center;justify-content:center;gap:4px;padding:14px;border-top:1px solid var(--bdr);flex-wrap:wrap}
+.pg-b{min-width:32px;height:32px;border-radius:7px;border:1px solid var(--bdr);background:var(--sur);color:var(--tx2);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:'DM Sans',sans-serif;padding:0 6px}
+.pg-b:hover:not(.dis){border-color:var(--bf);color:var(--bf)}
+.pg-b.act{background:var(--bf);color:#fff;border-color:var(--bf);font-weight:600}
+.pg-b.dis{opacity:.3;cursor:default}
+.ent-bar{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.ent-nm{width:150px;font-size:12px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.ent-trk{flex:1;height:7px;background:var(--sur2);border-radius:4px;overflow:hidden}
+.ent-fill{height:100%;border-radius:4px;transition:width .7s ease}
+.ent-n{width:22px;text-align:right;font-size:12px;font-weight:700;color:var(--tx);flex-shrink:0}
+.gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:14px}
+.gal-item{aspect-ratio:1;border-radius:var(--r);overflow:hidden;border:1px solid var(--bdr);background:var(--sur2);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .2s,box-shadow .2s;cursor:pointer}
+.gal-item:hover{transform:scale(1.03);box-shadow:var(--sh2)}
+.gal-item img{width:100%;height:100%;object-fit:cover}
+.gal-item .gal-overlay{position:absolute;inset:0;background:rgba(0,30,80,.35);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:8px;opacity:0;transition:opacity .2s}
+.gal-item:hover .gal-overlay{opacity:1}
+.gal-overlay span{font-size:10px;color:#fff;text-align:center;line-height:1.3;word-break:break-word;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.gal-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--tx3);font-size:22px}
+.gal-placeholder small{font-size:10px;font-family:'DM Sans',sans-serif}
+.photo-strip{display:flex;gap:5px;flex-wrap:wrap}
+.thumb-link{display:block;width:36px;height:36px;border-radius:6px;overflow:hidden;border:1.5px solid var(--bdr);flex-shrink:0;transition:transform .15s,box-shadow .15s;background:var(--sur2);cursor:pointer}
+.thumb-link:hover{transform:scale(1.15);box-shadow:var(--sh2);z-index:1;position:relative;border-color:var(--bf)}
+.thumb-link img{width:100%;height:100%;object-fit:cover}
+.thumb-link .no-img{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--tx3)}
+#modal{display:none;position:fixed;inset:0;z-index:9000;background:rgba(5,15,40,.88);align-items:center;justify-content:center;padding:20px}
+#modal.open{display:flex}
+.modal-box{background:var(--sur);border-radius:var(--rxl);overflow:hidden;max-width:920px;width:100%;box-shadow:var(--sh3);display:flex;flex-direction:column}
+.modal-hd{padding:14px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.modal-hd-t{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.modal-x{width:30px;height:30px;border-radius:7px;border:1px solid var(--bdr);background:transparent;cursor:pointer;font-size:17px;color:var(--tx2);display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.modal-x:hover{background:var(--err-l);color:var(--err);border-color:var(--err)}
+.modal-body{background:#08101E;display:flex;align-items:center;justify-content:center;min-height:340px;padding:20px;flex:1}
+.modal-body img{max-width:100%;max-height:65vh;object-fit:contain;border-radius:6px}
+.modal-ft{padding:10px 20px;border-top:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.modal-ft a{font-size:11px;color:var(--bf);text-decoration:none;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.modal-ft a:hover{text-decoration:underline}
+.divider{border:none;border-top:1px solid var(--bdr);margin:20px 0}
+.info-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--tx3);background:var(--sur2);border:1px solid var(--bdr);border-radius:20px;padding:3px 10px}
+/* Alert row */
+.alert-row{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.alert{display:flex;align-items:flex-start;gap:8px;padding:10px 14px;border-radius:10px;font-size:12px;flex:1;min-width:200px}
+.alert-warn{background:var(--warn-l);border:1px solid #F5CFA0;color:#7A4500}
+.alert-info{background:var(--bf-l);border:1px solid #B0C8EF;color:#003F8A}
+@media(max-width:960px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .hamburger{display:flex}
+  .cg2,.cg4,.cg3,.cg2b{grid-template-columns:1fr}
 }
-
-.container{
-  display:grid;
-  grid-template-columns:250px 1fr;
-  gap:20px;
+@media(max-width:540px){
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .page-body{padding:14px}
+  .topbar,.view-tabs{padding-left:14px;padding-right:14px}
 }
-
-.sidebar{
-  background:white;
-  border-radius:20px;
-  padding:20px;
-  box-shadow:0 2px 10px rgba(0,0,0,.08);
-  height:calc(100vh - 40px);
-}
-
-.sidebar h2{
-  color:#2952cc;
-  margin-bottom:25px;
-}
-
-.menu-item{
-  padding:12px;
-  border-radius:10px;
-  margin-bottom:10px;
-  background:#eef3ff;
-  color:#2952cc;
-  font-weight:bold;
-}
-
-.content{
-  display:flex;
-  flex-direction:column;
-  gap:20px;
-}
-
-.filter-box{
-  background:white;
-  padding:15px;
-  border-radius:15px;
-  box-shadow:0 2px 10px rgba(0,0,0,.08);
-  display:flex;
-  gap:10px;
-  align-items:center;
-}
-
-select{
-  padding:10px;
-  border-radius:8px;
-  border:1px solid #ccc;
-}
-
-button{
-  padding:10px 15px;
-  border:none;
-  border-radius:8px;
-  background:#2952cc;
-  color:white;
-  cursor:pointer;
-}
-
-.cards{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:15px;
-}
-
-.card{
-  background:white;
-  border-radius:20px;
-  padding:20px;
-  box-shadow:0 2px 10px rgba(0,0,0,.08);
-}
-
-.card h4{
-  color:#666;
-  margin-bottom:10px;
-}
-
-.card .value{
-  font-size:32px;
-  font-weight:bold;
-  color:#2952cc;
-}
-
-.charts{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:20px;
-}
-
-.chart-box{
-  background:white;
-  padding:20px;
-  border-radius:20px;
-  box-shadow:0 2px 10px rgba(0,0,0,.08);
-}
-
-.table-box{
-  background:white;
-  padding:20px;
-  border-radius:20px;
-  box-shadow:0 2px 10px rgba(0,0,0,.08);
-  overflow:auto;
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-
-th{
-  background:#f1f4f9;
-  padding:12px;
-  text-align:left;
-}
-
-td{
-  padding:10px;
-  border-bottom:1px solid #eee;
-}
-
-.photos-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
-  gap:15px;
-  margin-top:15px;
-}
-
-.photo-card{
-  background:white;
-  border-radius:15px;
-  overflow:hidden;
-  box-shadow:0 2px 10px rgba(0,0,0,.08);
-}
-
-.photo-card img{
-  width:100%;
-  height:120px;
-  object-fit:cover;
-}
-
-.photo-card p{
-  padding:10px;
-  font-size:12px;
-}
-
-.loading{
-  text-align:center;
-  padding:100px;
-  font-size:22px;
-}
-
-@media(max-width:1200px){
-
-  .cards{
-    grid-template-columns:repeat(2,1fr);
-  }
-
-  .charts{
-    grid-template-columns:1fr;
-  }
-
-}
-
-@media(max-width:768px){
-
-  .container{
-    grid-template-columns:1fr;
-  }
-
-  .cards{
-    grid-template-columns:1fr;
-  }
-
-}
-
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:199}
+.sb-overlay.open{display:block}
 </style>
-
 </head>
 <body>
 
-<div class="container">
+<div id="loader">
+  <div class="ld-logo">+<span>MARKA</span></div>
+  <div><div class="ld-track"><div class="ld-fill" id="ldBar"></div></div></div>
+  <div class="ld-txt" id="ldTxt">Conectando con Google Sheets…</div>
+</div>
 
-  <div class="sidebar">
+<div class="sb-overlay" id="sbOv" onclick="closeSb()"></div>
 
-    <h2>Dashboard</h2>
-
-    <div class="menu-item">
-      Resumen
+<div class="shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-brand">
+      <div class="sb-dot"></div>
+      <div>
+        <div class="sb-mark">+<span>MARKA</span></div>
+        <div class="sb-sub">Banco Familiar</div>
+      </div>
     </div>
+    <nav class="sb-nav">
+      <div class="sb-sec">Gastronómico</div>
+      <a class="nav-item active" onclick="nav('g-resumen')" href="#">
+        <span class="ico">📊</span>Resumen
+      </a>
+      <a class="nav-item" onclick="nav('g-detalle')" href="#">
+        <span class="ico">📋</span>Detalle locales
+      </a>
+      <a class="nav-item" onclick="nav('g-fotos')" href="#">
+        <span class="ico">🖼️</span>Fotos
+      </a>
+      <a class="nav-item" onclick="nav('g-competencia')" href="#">
+        <span class="ico">⚔️</span>Competencia
+      </a>
+      <div class="sb-sec">Tiendas</div>
+      <a class="nav-item" onclick="nav('t-resumen')" href="#">
+        <span class="ico">📊</span>Resumen
+      </a>
+      <a class="nav-item" onclick="nav('t-detalle')" href="#">
+        <span class="ico">📋</span>Detalle tiendas
+      </a>
+      <a class="nav-item" onclick="nav('t-fotos')" href="#">
+        <span class="ico">🖼️</span>Fotos
+      </a>
+    </nav>
+    <div class="sb-foot">Relevamiento Interior · Mayo 2026<br>+Marka — Banco Familiar</div>
+  </aside>
 
-  </div>
+  <div class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="hamburger" onclick="toggleSb()">
+          <span></span><span></span><span></span>
+        </button>
+        <div>
+          <div class="tb-title">Dashboard Relevamiento Interior</div>
+          <div class="tb-sub">+MARKA | Banco Familiar · Mayo 2026</div>
+        </div>
+      </div>
+      <div class="tb-right">
+        <div class="upd">🕐 <span id="lastUpd">—</span></div>
+        <button class="btn-rel" onclick="loadAll()">↺ Recargar</button>
+      </div>
+    </header>
 
-  <div class="content">
-
-    <div class="filter-box">
-
-      <label>Ciudad:</label>
-
-      <select id="cityFilter">
-        <option value="TODOS">Todas</option>
-      </select>
-
-      <button onclick="resetFilters()">
-        Limpiar
+    <div class="view-tabs">
+      <button class="vtab active" id="vtab-g" onclick="switchView('g')">
+        <span class="vtab-ico">🍽️</span>Relevamiento Gastronómico
       </button>
-
+      <button class="vtab" id="vtab-t" onclick="switchView('t')">
+        <span class="vtab-ico">🏪</span>Relevamiento de Tiendas
+      </button>
     </div>
 
-    <div class="cards">
+    <div class="page-body">
 
-      <div class="card">
-        <h4>Total Locales</h4>
-        <div class="value" id="totalLocales">0</div>
-      </div>
+      <!-- ══ GASTRO: RESUMEN ══════════════════════════════ -->
+      <section class="section active" id="sec-g-resumen">
+        <div class="sec-hd">
+          <div>
+            <div class="sec-lbl">Gastronómico · RE_BF_GASTRO_INT</div>
+            <div class="sec-title">Resumen del relevamiento</div>
+          </div>
+        </div>
 
-      <div class="card">
-        <h4>Material BF</h4>
-        <div class="value" id="materialBF">0%</div>
-      </div>
+        <div class="kpi-row">
+          <div class="kpi c-blue"><div class="kpi-ico">📍</div><div class="kpi-val" id="g-tot">—</div><div class="kpi-lbl">Locales únicos</div><div class="kpi-sub" id="g-tot-s">relevados</div></div>
+          <div class="kpi c-green"><div class="kpi-ico">✅</div><div class="kpi-val" id="g-mat">—</div><div class="kpi-lbl">Con material BF</div><div class="kpi-sub" id="g-mat-s">—</div></div>
+          <div class="kpi c-amber"><div class="kpi-ico">✔️</div><div class="kpi-val" id="g-corr">—</div><div class="kpi-lbl">Material correcto</div><div class="kpi-sub" id="g-corr-s">corresponde al tipo</div></div>
+          <div class="kpi c-red"><div class="kpi-ico">⚔️</div><div class="kpi-val" id="g-comp">—</div><div class="kpi-lbl">Con competencia</div><div class="kpi-sub" id="g-comp-s">—</div></div>
+          <div class="kpi c-purple"><div class="kpi-ico">🧠</div><div class="kpi-val" id="g-con">—</div><div class="kpi-lbl">Conocen la promo</div><div class="kpi-sub" id="g-con-s">—</div></div>
+        </div>
 
-      <div class="card">
-        <h4>Material Competencia</h4>
-        <div class="value" id="materialComp">0%</div>
-      </div>
+        <div class="flt">
+          <div class="flt-label">🔍 Filtros — actualizan KPIs y gráficos en tiempo real</div>
+          <div class="flt-row">
+            <div class="fg"><label class="fl">Ciudad</label>
+              <select class="fc" id="gf-ciudad" onchange="applyGastroFilter()">
+                <option value="">Todas las ciudades</option>
+              </select>
+            </div>
+            <div class="fg"><label class="fl">Tipo local</label>
+              <select class="fc" id="gf-tipo" onchange="applyGastroFilter()">
+                <option value="">Todos los tipos</option>
+              </select>
+            </div>
+            <div class="fg"><label class="fl">Material BF</label>
+              <select class="fc" id="gf-mat" onchange="applyGastroFilter()">
+                <option value="">Todos</option>
+                <option value="si">Con material</option>
+                <option value="no">Sin material</option>
+              </select>
+            </div>
+            <button class="btn-c" onclick="resetGastroFilter()">↺ Limpiar</button>
+          </div>
+        </div>
 
-      <div class="card">
-        <h4>Conocen Promo</h4>
-        <div class="value" id="conocenPromo">0%</div>
-      </div>
+        <div class="cg2">
+          <div class="cc">
+            <div class="cc-head"><div class="cc-title">Locales únicos por ciudad</div><span class="cc-badge">BARRAS</span></div>
+            <div style="height:260px"><canvas id="g-cCiudad"></canvas></div>
+          </div>
+          <div class="cc">
+            <div class="cc-head"><div class="cc-title">Presencia de material BF</div><span class="cc-badge">DONA</span></div>
+            <div style="height:260px"><canvas id="g-cMat"></canvas></div>
+          </div>
+        </div>
 
+        <div class="cg4">
+          <div class="cc">
+            <div class="cc-head"><div class="cc-title">¿Corresponde al tipo?</div><span class="cc-badge">DONA</span></div>
+            <div style="height:200px"><canvas id="g-cCorr"></canvas></div>
+          </div>
+          <div class="cc">
+            <div class="cc-head"><div class="cc-title">Estado del material</div><span class="cc-badge">DONA</span></div>
+            <div style="height:200px"><canvas id="g-cEstado"></canvas></div>
+          </div>
+          <div class="cc">
+            <div class="cc-head"><div class="cc-title">Encargado conoce la promo</div><span class="cc-badge">DONA</span></div>
+            <div style="height:200px"><canvas id="g-cConoce"></canvas></div>
+          </div>
+          <div class="cc">
+            <div class="cc-head"><div class="cc-title">Presencia de competencia</div><span class="cc-badge">DONA</span></div>
+            <div style="height:200px"><canvas id="g-cComp"></canvas></div>
+          </div>
+        </div>
+
+        <div class="cg2b">
+          <div class="cc">
+            <div class="cc-head"><div class="cc-title">Tipos de local</div><span class="cc-badge">DONA</span></div>
+            <div style="height:200px"><canvas id="g-cTipo"></canvas></div>
+          </div>
+          <div class="cc">
+            <div class="cc-head"><div class="cc-title">Beneficio exhibido (locales con material)</div><span class="cc-badge">BARRAS</span></div>
+            <div style="height:200px"><canvas id="g-cBenef"></canvas></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ GASTRO: DETALLE ══════════════════════════════ -->
+      <section class="section" id="sec-g-detalle">
+        <div class="sec-hd">
+          <div><div class="sec-lbl">Gastronómico · RE_BF_GASTRO_INT</div><div class="sec-title">Detalle por local</div></div>
+          <button class="btn-xl" onclick="exportExcel('g')">⬇ Exportar Excel</button>
+        </div>
+        <div class="tw">
+          <div class="tbar">
+            <div class="tbar-l"><div class="tt">Locales relevados</div><div class="tc" id="g-tblCnt">—</div></div>
+            <div class="srch"><span style="color:var(--tx3)">🔍</span><input type="text" id="g-search" placeholder="Buscar local, ciudad, observación…" oninput="onSearch('g')"></div>
+          </div>
+          <div class="tsx"><table><thead><tr id="g-tHead"></tr></thead><tbody id="g-tBody"></tbody></table></div>
+          <div class="pgn" id="g-pgn"></div>
+        </div>
+      </section>
+
+      <!-- ══ GASTRO: FOTOS ════════════════════════════════ -->
+      <section class="section" id="sec-g-fotos">
+        <div class="sec-hd">
+          <div><div class="sec-lbl">Evidencia fotográfica · Gastronómico</div><div class="sec-title">Fotos de materiales</div></div>
+          <div class="info-chip">Click → ampliar foto</div>
+        </div>
+        <div id="g-fotosGrid" class="gal-grid"></div>
+      </section>
+
+      <!-- ══ GASTRO: COMPETENCIA ══════════════════════════ -->
+      <section class="section" id="sec-g-competencia">
+        <div class="sec-hd">
+          <div><div class="sec-lbl">Hoja 2 · RE_COMPE_GASTRO_INT</div><div class="sec-title">Análisis de competencia</div></div>
+        </div>
+        <div class="kpi-row">
+          <div class="kpi c-red"><div class="kpi-ico">⚔️</div><div class="kpi-val" id="c-tot">—</div><div class="kpi-lbl">Locales con competencia</div></div>
+          <div class="kpi c-amber"><div class="kpi-ico">🏦</div><div class="kpi-val" id="c-marcas">—</div><div class="kpi-lbl">Marcas detectadas</div></div>
+          <div class="kpi c-blue"><div class="kpi-ico">📍</div><div class="kpi-val" id="c-ciud">—</div><div class="kpi-lbl">Ciudades cubiertas</div></div>
+          <div class="kpi c-red"><div class="kpi-ico">📢</div><div class="kpi-val" id="c-masvis">—</div><div class="kpi-lbl">Más visible que BF</div><div class="kpi-sub">locales donde supera BF</div></div>
+        </div>
+        <div class="cg2b">
+          <div class="cc">
+            <div class="cc-head"><div class="cc-title">Presencia por marca competidora</div></div>
+            <div id="c-marcaBars" style="max-height:280px;overflow-y:auto"></div>
+          </div>
+          <div class="cc">
+            <div class="cc-head"><div class="cc-title">Visibilidad vs Banco Familiar</div><span class="cc-badge">DONA</span></div>
+            <div style="height:240px"><canvas id="c-vis"></canvas></div>
+          </div>
+          <div class="cc">
+            <div class="cc-head"><div class="cc-title">Tipos de promo competencia</div><span class="cc-badge">DONA</span></div>
+            <div style="height:240px"><canvas id="c-promo"></canvas></div>
+          </div>
+          <div class="cc">
+            <div class="cc-head"><div class="cc-title">Presencia por ciudad</div><span class="cc-badge">BARRAS</span></div>
+            <div style="height:240px"><canvas id="c-ciudad"></canvas></div>
+          </div>
+        </div>
+        <div class="tw">
+          <div class="tbar">
+            <div class="tbar-l"><div class="tt">Registros competencia</div><div class="tc" id="c-cnt">—</div></div>
+            <div class="srch"><span style="color:var(--tx3)">🔍</span><input type="text" id="c-search" placeholder="Buscar local, marca…" oninput="onSearchC()"></div>
+          </div>
+          <div class="tsx"><table><thead><tr id="c-tHead"></tr></thead><tbody id="c-tBody"></tbody></table></div>
+          <div class="pgn" id="c-pgn"></div>
+        </div>
+      </section>
+
+      <!-- ══ TIENDAS: RESUMEN ═════════════════════════════ -->
+      <section class="section" id="sec-t-resumen">
+        <div class="sec-hd">
+          <div><div class="sec-lbl">Tiendas · RE_BF_TIENDAS</div><div class="sec-title">Resumen del relevamiento</div></div>
+        </div>
+
+        <div class="kpi-row">
+          <div class="kpi c-blue"><div class="kpi-ico">🏪</div><div class="kpi-val" id="t-tot">—</div><div class="kpi-lbl">Tiendas relevadas</div><div class="kpi-sub" id="t-tot-s">registros</div></div>
+          <div class="kpi c-green"><div class="kpi-ico">✅</div><div class="kpi-val" id="t-mat">—</div><div class="kpi-lbl">Con material BF</div><div class="kpi-sub" id="t-mat-s">—</div></div>
+          <div class="kpi c-green"><div class="kpi-ico">👁️</div><div class="kpi-val" id="t-vis">—</div><div class="kpi-lbl">Visible desde vidriera</div><div class="kpi-sub" id="t-vis-s">—</div></div>
+          <div class="kpi c-red"><div class="kpi-ico">⚔️</div><div class="kpi-val" id="t-comp">—</div><div class="kpi-lbl">Con competencia</div><div class="kpi-sub" id="t-comp-s">—</div></div>
+          <div class="kpi c-purple"><div class="kpi-ico">🧠</div><div class="kpi-val" id="t-con">—</div><div class="kpi-lbl">Conocen la promo</div><div class="kpi-sub" id="t-con-s">—</div></div>
+        </div>
+
+        <div class="flt">
+          <div class="flt-label">🔍 Filtros — actualizan KPIs y gráficos en tiempo real</div>
+          <div class="flt-row">
+            <div class="fg"><label class="fl">Marca / cadena</label>
+              <select class="fc" id="tf-marca" onchange="applyTiendaFilter()">
+                <option value="">Todas las marcas</option>
+              </select>
+            </div>
+            <div class="fg"><label class="fl">Estado material</label>
+              <select class="fc" id="tf-estado" onchange="applyTiendaFilter()">
+                <option value="">Todos los estados</option>
+              </select>
+            </div>
+            <button class="btn-c" onclick="resetTiendaFilter()">↺ Limpiar</button>
+          </div>
+        </div>
+
+        <div class="cg2">
+          <div class="cc">
+            <div class="cc-head"><div class="cc-title">Estado del material por tienda</div><span class="cc-badge">BARRAS</span></div>
+            <div style="height:260px"><canvas id="t-cEstado"></canvas></div>
+          </div>
+          <div class="cc">
+            <div class="cc-head"><div class="cc-title">Presencia material BF</div><span class="cc-badge">DONA</span></div>
+            <div style="height:260px"><canvas id="t-cMat"></canvas></div>
+          </div>
+        </div>
+
+        <div class="cg3">
+          <div class="cc">
+            <div class="cc-head"><div class="cc-title">Muestra la promo</div><span class="cc-badge">DONA</span></div>
+            <div style="height:200px"><canvas id="t-cPromo"></canvas></div>
+          </div>
+          <div class="cc">
+            <div class="cc-head"><div class="cc-title">Encargado conoce la promo</div><span class="cc-badge">DONA</span></div>
+            <div style="height:200px"><canvas id="t-cConoce"></canvas></div>
+          </div>
+          <div class="cc">
+            <div class="cc-head"><div class="cc-title">Competencia presente</div><span class="cc-badge">DONA</span></div>
+            <div style="height:200px"><canvas id="t-cComp"></canvas></div>
+          </div>
+        </div>
+
+        <div class="cc" style="margin-bottom:20px">
+          <div class="cc-head"><div class="cc-title">Material BF por marca / cadena</div><span class="cc-badge">BARRAS AGRUPADAS</span></div>
+          <div style="height:280px"><canvas id="t-cMarca"></canvas></div>
+        </div>
+      </section>
+
+      <!-- ══ TIENDAS: DETALLE ═════════════════════════════ -->
+      <section class="section" id="sec-t-detalle">
+        <div class="sec-hd">
+          <div><div class="sec-lbl">Tiendas · RE_BF_TIENDAS</div><div class="sec-title">Detalle por tienda</div></div>
+          <button class="btn-xl" onclick="exportExcel('t')">⬇ Exportar Excel</button>
+        </div>
+        <div class="tw">
+          <div class="tbar">
+            <div class="tbar-l"><div class="tt">Tiendas relevadas</div><div class="tc" id="t-tblCnt">—</div></div>
+            <div class="srch"><span style="color:var(--tx3)">🔍</span><input type="text" id="t-search" placeholder="Buscar tienda, marca, observación…" oninput="onSearch('t')"></div>
+          </div>
+          <div class="tsx"><table><thead><tr id="t-tHead"></tr></thead><tbody id="t-tBody"></tbody></table></div>
+          <div class="pgn" id="t-pgn"></div>
+        </div>
+      </section>
+
+      <!-- ══ TIENDAS: FOTOS ═══════════════════════════════ -->
+      <section class="section" id="sec-t-fotos">
+        <div class="sec-hd">
+          <div><div class="sec-lbl">Evidencia fotográfica · Tiendas</div><div class="sec-title">Fotos de materiales</div></div>
+          <div class="info-chip">Click → ampliar foto</div>
+        </div>
+        <div id="t-fotosGrid" class="gal-grid"></div>
+      </section>
+
+    </div><!-- /page-body -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<div id="modal" onclick="closeModalBg(event)">
+  <div class="modal-box">
+    <div class="modal-hd">
+      <div class="modal-hd-t" id="mTitle">Foto</div>
+      <button class="modal-x" onclick="closeModal()">✕</button>
     </div>
-
-    <div class="charts">
-
-      <div class="chart-box">
-        <canvas id="chartBF"></canvas>
-      </div>
-
-      <div class="chart-box">
-        <canvas id="chartPromo"></canvas>
-      </div>
-
-      <div class="chart-box">
-        <canvas id="chartEstado"></canvas>
-      </div>
-
-      <div class="chart-box">
-        <canvas id="chartComp"></canvas>
-      </div>
-
+    <div class="modal-body"><img id="mImg" src="" alt="Foto relevamiento"></div>
+    <div class="modal-ft">
+      <a id="mLink" href="#" target="_blank" rel="noopener">🔗 Abrir en Drive</a>
+      <span class="info-chip" style="font-size:10px">ESC para cerrar</span>
     </div>
-
-    <div class="table-box">
-
-      <h3>Locales</h3>
-
-      <table>
-
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Local</th>
-            <th>Ciudad</th>
-            <th>Material BF</th>
-            <th>Conoce Promo</th>
-          </tr>
-        </thead>
-
-        <tbody id="tableBody"></tbody>
-
-      </table>
-
-    </div>
-
-    <div class="table-box">
-
-      <h3>Fotos</h3>
-
-      <div class="photos-grid" id="photosGrid"></div>
-
-    </div>
-
   </div>
-
 </div>
 
 <script>
-
-// ======================================================
-// IMPORTANTE
-// ======================================================
-
-// REEMPLAZAR POR EL ID REAL DEL GOOGLE SHEET
-
+// ══════════════════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════════════════
 const SHEET_ID = "1YrNdJ_Hf9AyrKm_MpO3FgyqLWs4x3iNRuQv9AfNpnok";
+const API      = "https://opensheet.elk.sh/" + SHEET_ID + "/";
+const SHEETS   = { gastro:"RE_BF_GASTRO_INT", compe:"RE_COMPE_GASTRO_INT", tiendas:"RE_BF_TIENDAS" };
+const PAL = ["#003F8A","#1565C0","#0096FF","#60B4FF","#0D7A43","#B86A0A","#B91C1C","#7C3AED","#0891B2","#DB2777","#059669","#D97706","#1E3A5F","#2E7D32","#C2410C"];
+const PG = 15;
 
-// ======================================================
-// URLS
-// ======================================================
+// ══════════════════════════════════════════════════════════
+// COLUMN MAPS — exactas del Excel
+// ══════════════════════════════════════════════════════════
+const GK = {
+  FECHA:"FECHA", LOCAL:"LOCAL", CIUDAD:"CIUDAD", TIPO:"TIPO_LOCAL",
+  TIPO_MAT_ASIG:"TIPO_MATERIAL_ASIGNADO", DIA_PROMO:"DIA_PROMO",
+  BENEF_VIG:"BENEFICIO_VIGENTE", HAY_MAT:"HAY_MATERIAL_DESIGNADO",
+  TIPO_MAT_ENC:"TIPO_MATERIAL_ENCONTRADO", MATS_COL:"MATERIALES_COLOCADOS",
+  CORRESPONDE:"MATERIAL_CORRESPONDE_TIPO",   // ← CORREGIDO
+  ESTADO_MAT:"ESTADO_MATERIAL",              // ← CORREGIDO
+  BENEF_EXH:"BENEFICIO_EXHIBIDO",
+  OFERTA_OK:"OFERTA_EXHIBIDA_CORRECTA",      // ← NUEVO
+  HAY_ANT:"HAY_MATERIAL_ANTERIOR",           // ← NUEVO
+  TIPO_ANT:"TIPO_MATERIAL_ANTERIOR",         // ← NUEVO
+  ENCARGADO:"ENCARGADO_CONOCE_PROMO",
+  NOMBRE_ENC:"NOMBRE_ENCARGADO",             // ← NUEVO
+  OBS:"OBSERVACIONES",
+  FOTO1:"FOTO_MATERIAL_1", FOTO2:"FOTO_MATERIAL_2",
+  FOTO3:"FOTO_MATERIAL_3", FOTO_AUS:"FOTO_AUSENCIA", FOTO_ANT:"FOTO_ANTERIOR_1"
+};
+const CK = {
+  FECHA:"FECHA", LOCAL:"LOCAL", CIUDAD:"CIUDAD", TIPO:"TIPO_LOCAL",
+  HAY_COMP:"HAY_MATERIAL_COMPETENCIA", MARCAS:"MARCAS_IDENTIFICADAS",
+  VIS:"VISIBILIDAD_VS_BF", HAY_PROMO:"HAY_PROMO_COMPETENCIA",
+  TIPO_PROMO:"TIPO_PROMO_COMPETENCIA", OBS_PROMO:"OBS_PROMO_COMPETENCIA",
+  FOTO1:"FOTO_COMP_1", FOTO2:"FOTO_COMP_2", FOTO3:"FOTO_COMP_3"
+};
+const TK = {
+  FECHA:"FECHA", LOCAL:"LOCAL",
+  MAT_ENC:"MATERIAL ENCONTRADO", OTRO_MAT:"OTRO MATERIAL BF",
+  ESTADO:"ESTADO MATERIAL", MUESTRA:"MUESTRA PROMO",
+  BENEF:"BENEFICIO INDICADO", MAT_ANT:"MATERIAL CAMPAÑA ANTERIOR",
+  MAT_COMP:"MATERIAL COMPETENCIA", PROMO_OTRA:"PROMO OTRA ENTIDAD",
+  CONOCE:"ENCARGADO CONOCE PROMO", OBS:"OBSERVACIONES",
+  OBS_NO_FOTO:"OBS NO FOTO COMP", OBS_OTRO:"OBS OTRO MATERIAL",  // ← NUEVO
+  FOTO_BF: ["FOTO BF 1","FOTO BF 2","FOTO BF 3","FOTO BF 4","FOTO BF 5","FOTO BF 6"],
+  FOTO_ANT: ["FOTO ANT 1","FOTO ANT 2","FOTO ANT 3","FOTO ANT 4","FOTO ANT 5","FOTO ANT 6"],
+  FOTO_COMP: ["FOTO COMP 1","FOTO COMP 2","FOTO COMP 3","FOTO COMP 4","FOTO COMP 5","FOTO COMP 6"]
+};
 
-const BF_URL =
-`https://opensheet.elk.sh/1YrNdJ_Hf9AyrKm_MpO3FgyqLWs4x3iNRuQv9AfNpnok/RE_BF_GASTRO_INT`;
+const OMIT_G  = new Set(["HORA","FISCALIZADOR","ESTADO_ENVIO","NOMBRE_ENCARGADO"]);
+const OMIT_C  = new Set(["HORA","FISCALIZADOR","MOTIVO_SIN_FOTO","OBS_PROMO_COMPETENCIA"]);
+const OMIT_T  = new Set(["HORA","AUDITOR","OBS NO FOTO COMP","OBS OTRO MATERIAL"]);
+const PHOTO_G = [GK.FOTO1,GK.FOTO2,GK.FOTO3,GK.FOTO_AUS,GK.FOTO_ANT];
+const PHOTO_C = [CK.FOTO1,CK.FOTO2,CK.FOTO3];
+const PHOTO_T = [...TK.FOTO_BF,...TK.FOTO_ANT,...TK.FOTO_COMP];
 
-const COMP_URL =
-`https://opensheet.elk.sh/1YrNdJ_Hf9AyrKm_MpO3FgyqLWs4x3iNRuQv9AfNpnok/RE_COMPE_GASTRO_INT`;
+// Columnas prioritarias para la tabla gastro (orden visible)
+const G_TABLE_COLS = [
+  GK.FECHA, GK.LOCAL, GK.CIUDAD, GK.TIPO,
+  GK.HAY_MAT, GK.CORRESPONDE, GK.ESTADO_MAT,
+  GK.BENEF_EXH, GK.ENCARGADO, GK.OBS
+];
+const T_TABLE_COLS = [
+  TK.FECHA, TK.LOCAL, TK.MAT_ENC, TK.ESTADO,
+  TK.MUESTRA, TK.CONOCE, TK.MAT_COMP, TK.OBS
+];
+const C_TABLE_COLS = [
+  CK.FECHA, CK.LOCAL, CK.CIUDAD, CK.TIPO,
+  CK.HAY_COMP, CK.MARCAS, CK.VIS, CK.HAY_PROMO, CK.TIPO_PROMO
+];
 
-// ======================================================
-// VARIABLES
-// ======================================================
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+let rawG=[], rawC=[], rawT=[];
+let dedG=[], dedC=[], allT=[];
+let filtG=[], filtC=[], filtT=[];
+let charts={};
+let state={
+  g:{pg:1,sort:"",dir:1,q:""},
+  t:{pg:1,sort:"",dir:1,q:""},
+  c:{pg:1,sort:"",dir:1,q:""}
+};
 
-let bfData = [];
-let compData = [];
+// ══════════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════════
+const N   = v => v==null ? "" : String(v).trim();
+const NU  = v => N(v).toUpperCase();
+const yes = v => {
+  const u = NU(v);
+  return u==="SI"||u==="SÍ"||u==="S"||u==="YES"||u==="1"||u==="TRUE"
+      || u.startsWith("SI,") || u.startsWith("SÍ,")
+      || u.includes("CONOCE BIEN");
+};
+const pct = (n,d) => d>0 ? Math.round(n/d*100)+"%" : "—";
+const uniq = a => [...new Set(a.map(v=>N(v)).filter(Boolean))].sort();
 
-let chartBF;
-let chartPromo;
-let chartEstado;
-let chartComp;
+function set(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
 
-// ======================================================
-// INIT
-// ======================================================
+// Convierte serial de fecha de Excel a string legible DD/MM/YYYY
+function excelDate(serial) {
+  const n = parseFloat(N(serial));
+  if (!n || isNaN(n)) return N(serial);
+  // Excel serial: días desde 01/01/1900 (con bug de año bisiesto de Lotus)
+  const d = new Date(Math.round((n - 25569) * 86400 * 1000));
+  return d.toLocaleDateString('es-PY', {day:'2-digit',month:'2-digit',year:'numeric'});
+}
 
-async function init(){
+// Extrae marca/cadena del formato "MARCA — LOCAL" usado en tiendas
+function extractBrand(local) {
+  const s = N(local);
+  const idx = s.indexOf(' — ');
+  return idx > 0 ? s.substring(0, idx).trim() : s;
+}
 
+function ldProg(p,t){
+  document.getElementById("ldBar").style.width=p+"%";
+  if(t)document.getElementById("ldTxt").textContent=t;
+}
+function hideLoader(){
+  const l=document.getElementById("loader");
+  l.classList.add("hidden");
+  setTimeout(()=>l.style.display="none",600);
+}
+function dedup(arr, key){
+  const seen=new Set();
+  return arr.filter(r=>{
+    const k=NU(r[key]||"");
+    if(!k||seen.has(k))return false;
+    seen.add(k);return true;
+  });
+}
+function driveThumb(url){
+  if(!url||!N(url))return null;
+  const m=N(url).match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if(!m)return null;
+  return {thumb:`https://drive.google.com/thumbnail?id=${m[1]}&sz=w300`,view:`https://drive.google.com/file/d/${m[1]}/view`};
+}
+function countMap(arr,key){
+  const m={};
+  arr.forEach(r=>{const v=N(r[key])||"Sin dato";m[v]=(m[v]||0)+1;});
+  return m;
+}
+function killChart(k){if(charts[k]){charts[k].destroy();delete charts[k];}}
+function donut(cid,labels,data,colors){
+  killChart(cid);
+  const el=document.getElementById(cid);
+  if(!el||!data.some(v=>v>0))return;
+  charts[cid]=new Chart(el,{
+    type:"doughnut",
+    data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:3,borderColor:"#fff",hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:"64%",
+      plugins:{legend:{position:"bottom",labels:{font:{size:11},padding:10,boxWidth:11}},
+               tooltip:{callbacks:{label:c=>" "+c.label+": "+c.parsed}}}}
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════
+function nav(name){
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+  const sec=document.getElementById("sec-"+name);
+  if(sec)sec.classList.add("active");
+  document.querySelectorAll(".nav-item").forEach(n=>{
+    if((n.getAttribute("onclick")||"").includes("'"+name+"'"))n.classList.add("active");
+  });
+  closeSb();
+}
+function switchView(v){
+  document.getElementById("vtab-g").classList.toggle("active",v==="g");
+  document.getElementById("vtab-t").classList.toggle("active",v==="t");
+  nav(v==="g"?"g-resumen":"t-resumen");
+}
+function toggleSb(){
+  document.getElementById("sidebar").classList.toggle("open");
+  document.getElementById("sbOv").classList.toggle("open");
+}
+function closeSb(){
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("sbOv").classList.remove("open");
+}
+
+// ══════════════════════════════════════════════════════════
+// NORMALIZACIÓN DE HOJAS (doble header en GASTRO)
+// ══════════════════════════════════════════════════════════
+// Cuando opensheet devuelve la hoja con labels de sección como primer fila,
+// la primera fila contiene los headers reales como valores → remapear.
+function normalizeSheet(rows){
+  if(!rows.length)return rows;
+  const firstVals=Object.values(rows[0]).map(v=>v==null?"":String(v).trim());
+  if(firstVals.includes("FECHA")&&(firstVals.includes("LOCAL")||firstVals.includes("LOCAL "))){
+    const oldKeys=Object.keys(rows[0]);
+    const newKeys=firstVals.map((v,i)=>v||oldKeys[i]||("COL_"+i));
+    return rows.slice(1).map(row=>{
+      const obj={};
+      const vals=Object.values(row);
+      newKeys.forEach((k,i)=>{obj[k]=vals[i]!=null?vals[i]:null;});
+      return obj;
+    }).filter(row=>Object.values(row).some(v=>v!=null&&String(v).trim()!==""));
+  }
+  return rows;
+}
+
+// ══════════════════════════════════════════════════════════
+// FETCH
+// ══════════════════════════════════════════════════════════
+async function fetchSheet(name){
+  const r=await fetch(API+encodeURIComponent(name));
+  if(!r.ok)throw new Error("HTTP "+r.status+" al cargar "+name);
+  const j=await r.json();
+  if(!Array.isArray(j))throw new Error("Respuesta inesperada de opensheet: "+name);
+  return normalizeSheet(j);
+}
+
+async function loadAll(){
+  ldProg(0,"Iniciando carga…");
+  document.getElementById("loader").style.display="flex";
+  document.getElementById("loader").classList.remove("hidden");
   try{
+    ldProg(15,"Cargando RE_BF_GASTRO_INT…");
+    rawG=await fetchSheet(SHEETS.gastro);
+    ldProg(45,"Cargando RE_COMPE_GASTRO_INT…");
+    rawC=await fetchSheet(SHEETS.compe);
+    ldProg(70,"Cargando RE_BF_TIENDAS…");
+    rawT=await fetchSheet(SHEETS.tiendas);
+    ldProg(88,"Procesando y deduplicando…");
 
-    const bfResponse =
-      await fetch(BF_URL);
+    dedG=dedup(rawG,GK.LOCAL);
+    dedC=dedup(rawC,CK.LOCAL);
+    allT=[...rawT];
+    filtG=[...dedG];filtC=[...dedC];filtT=[...allT];
 
-    const compResponse =
-      await fetch(COMP_URL);
-
-    const bfJson =
-      (await bfResponse.json())
-      .map(normalizeRow);
-
-    const compJson =
-      (await compResponse.json())
-      .map(normalizeRow);
-
-    console.log("BF", bfJson[0]);
-    console.log("COMP", compJson[0]);
-
-    bfData =
-      getUniqueByLocal(
-        mapBFData(bfJson)
-      );
-
-    compData =
-      getUniqueByLocal(
-        mapCompData(compJson)
-      );
-
-    populateCities();
-
-    renderDashboard();
-
-  }catch(error){
-
-    console.error(error);
-
-    document.body.innerHTML =
-    `
-      <div class="loading">
-        Error cargando datos
-      </div>
-    `;
-
+    set("lastUpd",new Date().toLocaleString("es-PY"));
+    populateFilters();
+    renderAll();
+    ldProg(100,"¡Listo! "+dedG.length+" locales gastro · "+allT.length+" tiendas");
+    setTimeout(hideLoader,700);
+  }catch(err){
+    document.getElementById("ldTxt").textContent="❌ "+err.message+" — Verificá que el Google Sheet esté publicado (compartido con cualquiera que tenga el enlace).";
+    document.getElementById("ldBar").style.background="#B91C1C";
+    document.getElementById("ldBar").style.width="100%";
+    console.error(err);
   }
-
 }
 
-// ======================================================
-// NORMALIZE HEADERS
-// ======================================================
-
-function cleanKey(key){
-
-  return key
-    .trim()
-    .toUpperCase()
-    .replace(/\s+/g,'_');
-
-}
-
-function normalizeRow(row){
-
-  const clean = {};
-
-  Object.keys(row).forEach(key => {
-
-    clean[cleanKey(key)] = row[key];
-
-  });
-
-  return clean;
-
-}
-
-// ======================================================
-// HELPERS
-// ======================================================
-
-function normalize(value){
-
-  return String(value || "")
-    .trim()
-    .toUpperCase();
-
-}
-
-function percent(part,total){
-
-  if(total === 0) return 0;
-
-  return Math.round((part / total) * 100);
-
-}
-
-// ======================================================
-// DEDUPLICATE
-// ======================================================
-
-function getUniqueByLocal(data){
-
-  const seen = new Set();
-
-  return data.filter(item => {
-
-    const local =
-      item.local
-      ?.trim()
-      .toUpperCase();
-
-    if(!local) return false;
-
-    if(seen.has(local)){
-
-      return false;
-
-    }
-
-    seen.add(local);
-
-    return true;
-
-  });
-
-}
-
-// ======================================================
-// MAP BF
-// ======================================================
-
-function mapBFData(data){
-
-  return data.map(row => ({
-
-    fecha:
-      row.FECHA || "",
-
-    local:
-      row.LOCAL || "",
-
-    ciudad:
-      row.CIUDAD || "",
-
-    hayMaterial:
-      normalize(
-        row.HAY_MATERIAL_DESIGNADO
-      ),
-
-    estadoMaterial:
-      row.MATERIAL_CORRESPONDE_TIPO ||
-      "SIN_DATO",
-
-    conocePromo:
-      normalize(
-        row.ENCARGADO_CONOCE_PROMO
-      ),
-
-    fotos:[
-
-      row.FOTO_MATERIAL_1,
-      row.FOTO_MATERIAL_2,
-      row.FOTO_MATERIAL_3,
-      row.FOTO_AUSENCIA,
-      row.FOTO_ANTERIOR_1
-
-    ].filter(Boolean)
-
-  }));
-
-}
-
-// ======================================================
-// MAP COMP
-// ======================================================
-
-function mapCompData(data){
-
-  return data.map(row => ({
-
-    fecha:
-      row.FECHA || "",
-
-    local:
-      row.LOCAL || "",
-
-    ciudad:
-      row.CIUDAD || "",
-
-    hayCompetencia:
-      normalize(
-        row.HAY_MATERIAL_COMPETENCIA
-      ),
-
-    fotos:[
-
-      row.FOTO_1,
-      row.FOTO_2,
-      row.FOTO_3
-
-    ].filter(Boolean)
-
-  }));
-
-}
-
-// ======================================================
-// FILTERS
-// ======================================================
-
-function populateCities(){
-
-  const cities =
-    [...new Set(
-      bfData
-      .map(i => i.ciudad)
-      .filter(Boolean)
-    )];
-
-  const select =
-    document.getElementById("cityFilter");
-
-  cities
-    .sort()
-    .forEach(city => {
-
-      const option =
-        document.createElement("option");
-
-      option.value = city;
-      option.textContent = city;
-
-      select.appendChild(option);
-
-    });
-
-  select.addEventListener(
-    "change",
-    renderDashboard
-  );
-
-}
-
-function resetFilters(){
-
-  document.getElementById(
-    "cityFilter"
-  ).value = "TODOS";
-
-  renderDashboard();
-
-}
-
-function getFilteredData(){
-
-  const city =
-    document.getElementById(
-      "cityFilter"
-    ).value;
-
-  let filteredBF = [...bfData];
-  let filteredComp = [...compData];
-
-  if(city !== "TODOS"){
-
-    filteredBF =
-      filteredBF.filter(
-        i => i.ciudad === city
-      );
-
-    filteredComp =
-      filteredComp.filter(
-        i => i.ciudad === city
-      );
-
-  }
-
-  return {
-    filteredBF,
-    filteredComp
+// ══════════════════════════════════════════════════════════
+// FILTROS
+// ══════════════════════════════════════════════════════════
+function populateFilters(){
+  const sel=(id,vals)=>{
+    const s=document.getElementById(id);
+    if(!s)return;
+    const cur=s.value;
+    const first=s.options[0].outerHTML;
+    s.innerHTML=first;
+    vals.forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;s.appendChild(o);});
+    if(cur)s.value=cur;
   };
-
+  sel("gf-ciudad",uniq(dedG.map(r=>r[GK.CIUDAD])));
+  sel("gf-tipo",uniq(dedG.map(r=>r[GK.TIPO])));
+  // Tiendas: marcas extraídas del campo LOCAL
+  const marcas=uniq(allT.map(r=>extractBrand(r[TK.LOCAL])));
+  sel("tf-marca",marcas);
+  sel("tf-estado",uniq(allT.map(r=>r[TK.ESTADO])));
 }
 
-// ======================================================
-// DASHBOARD
-// ======================================================
-
-function renderDashboard(){
-
-  const {
-    filteredBF,
-    filteredComp
-  } = getFilteredData();
-
-  renderKPIs(
-    filteredBF,
-    filteredComp
-  );
-
-  renderCharts(
-    filteredBF,
-    filteredComp
-  );
-
-  renderTable(filteredBF);
-
-  renderPhotos(filteredBF);
-
+function applyGastroFilter(){
+  const c=document.getElementById("gf-ciudad").value;
+  const t=document.getElementById("gf-tipo").value;
+  const m=document.getElementById("gf-mat").value;
+  filtG=dedG.filter(r=>{
+    if(c&&N(r[GK.CIUDAD])!==c)return false;
+    if(t&&N(r[GK.TIPO])!==t)return false;
+    if(m==="si"&&!yes(r[GK.HAY_MAT]))return false;
+    if(m==="no"&&yes(r[GK.HAY_MAT]))return false;
+    return true;
+  });
+  filtC=c ? dedC.filter(r=>N(r[CK.CIUDAD])===c) : [...dedC];
+  state.g.pg=1;renderGastro();
+}
+function resetGastroFilter(){
+  document.getElementById("gf-ciudad").value="";
+  document.getElementById("gf-tipo").value="";
+  document.getElementById("gf-mat").value="";
+  filtG=[...dedG];filtC=[...dedC];
+  state.g.pg=1;renderGastro();
+}
+function applyTiendaFilter(){
+  const marca=document.getElementById("tf-marca").value;
+  const estado=document.getElementById("tf-estado").value;
+  filtT=allT.filter(r=>{
+    if(marca&&extractBrand(r[TK.LOCAL])!==marca)return false;
+    if(estado&&N(r[TK.ESTADO])!==estado)return false;
+    return true;
+  });
+  state.t.pg=1;renderTiendas();
+}
+function resetTiendaFilter(){
+  document.getElementById("tf-marca").value="";
+  document.getElementById("tf-estado").value="";
+  filtT=[...allT];state.t.pg=1;renderTiendas();
 }
 
-// ======================================================
-// KPIS
-// ======================================================
+// ══════════════════════════════════════════════════════════
+// RENDER ALL
+// ══════════════════════════════════════════════════════════
+function renderAll(){renderGastro();renderTiendas();}
 
-function renderKPIs(bf,comp){
-
-  const totalLocales =
-    bf.length;
-
-  const bfYes =
-    bf.filter(
-      i => i.hayMaterial === "SI"
-    ).length;
-
-  const promoYes =
-    bf.filter(
-      i => i.conocePromo === "SI"
-    ).length;
-
-  const compYes =
-    comp.filter(
-      i => i.hayCompetencia === "SI"
-    ).length;
-
-  document.getElementById(
-    "totalLocales"
-  ).textContent = totalLocales;
-
-  document.getElementById(
-    "materialBF"
-  ).textContent =
-    percent(bfYes,totalLocales) + "%";
-
-  document.getElementById(
-    "conocenPromo"
-  ).textContent =
-    percent(promoYes,totalLocales) + "%";
-
-  document.getElementById(
-    "materialComp"
-  ).textContent =
-    percent(compYes,comp.length) + "%";
-
+// ══════════════════════════════════════════════════════════
+// GASTRO RENDER
+// ══════════════════════════════════════════════════════════
+function renderGastro(){
+  renderGastroKPIs();
+  renderGastroCharts();
+  renderGastroTable();
+  renderGastroFotos();
+  renderComp();
 }
 
-// ======================================================
-// CHARTS
-// ======================================================
+function renderGastroKPIs(){
+  const dG=filtG,dC=filtC,n=dG.length;
+  const conMat=dG.filter(r=>yes(r[GK.HAY_MAT])).length;
+  // Material que corresponde al tipo asignado
+  const conCorr=dG.filter(r=>yes(r[GK.HAY_MAT])&&N(r[GK.CORRESPONDE]).toLowerCase().includes("corresponde")).length;
+  const conBien=dG.filter(r=>yes(r[GK.ENCARGADO])).length;
+  const conComp=dedC.filter(r=>yes(r[CK.HAY_COMP])).length;
+  const nC=dedC.length;
 
-function renderCharts(bf,comp){
+  set("g-tot",n);
+  set("g-tot-s","locales únicos");
+  set("g-mat",pct(conMat,n));
+  set("g-mat-s",conMat+" de "+n);
+  set("g-corr",pct(conCorr,conMat||1));
+  set("g-corr-s","de los que tienen material");
+  set("g-comp",pct(conComp,nC||n));
+  set("g-comp-s",conComp+" de "+(nC||n));
+  set("g-con",pct(conBien,n));
+  set("g-con-s",conBien+" de "+n);
+}
 
-  if(chartBF) chartBF.destroy();
-  if(chartPromo) chartPromo.destroy();
-  if(chartEstado) chartEstado.destroy();
-  if(chartComp) chartComp.destroy();
+function renderGastroCharts(){
+  const dG=filtG,dC=filtC;
 
-  // BF
-
-  const bfYes =
-    bf.filter(
-      i => i.hayMaterial === "SI"
-    ).length;
-
-  const bfNo =
-    bf.length - bfYes;
-
-  chartBF = new Chart(
-
-    document.getElementById("chartBF"),
-
-    {
-      type:"doughnut",
-
-      data:{
-        labels:["SI","NO"],
-
-        datasets:[{
-          data:[bfYes,bfNo]
-        }]
-      }
-    }
-
-  );
-
-  // PROMO
-
-  const promoYes =
-    bf.filter(
-      i => i.conocePromo === "SI"
-    ).length;
-
-  const promoNo =
-    bf.length - promoYes;
-
-  chartPromo = new Chart(
-
-    document.getElementById("chartPromo"),
-
-    {
-      type:"pie",
-
-      data:{
-        labels:["SI","NO"],
-
-        datasets:[{
-          data:[promoYes,promoNo]
-        }]
-      }
-    }
-
-  );
-
-  // ESTADO
-
-  const estadoMap = {};
-
-  bf.forEach(item => {
-
-    const estado =
-      item.estadoMaterial ||
-      "SIN_DATO";
-
-    estadoMap[estado] =
-      (estadoMap[estado] || 0) + 1;
-
+  // 1. Locales por ciudad
+  killChart("gCiudad");
+  const cm={};dG.forEach(r=>{const c=N(r[GK.CIUDAD])||"Sin ciudad";cm[c]=(cm[c]||0)+1;});
+  const cs=Object.entries(cm).sort((a,b)=>b[1]-a[1]);
+  charts.gCiudad=new Chart(document.getElementById("g-cCiudad"),{
+    type:"bar",
+    data:{labels:cs.map(e=>e[0]),datasets:[{label:"Locales",data:cs.map(e=>e[1]),
+      backgroundColor:cs.map((_,i)=>PAL[i%PAL.length]),borderRadius:6,barPercentage:.72}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>" "+c.parsed.y+" locales"}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:11},maxRotation:40}},
+              y:{grid:{color:"#EEF2FF"},ticks:{font:{size:11},stepSize:1}}}}
   });
 
-  chartEstado = new Chart(
+  // 2. Material BF
+  const mSi=dG.filter(r=>yes(r[GK.HAY_MAT])).length;
+  donut("g-cMat",["Con material BF","Sin material BF"],[mSi,dG.length-mSi],["#0D7A43","#B91C1C"]);
 
-    document.getElementById("chartEstado"),
+  // 3. ¿Corresponde al tipo asignado? — usa MATERIAL_CORRESPONDE_TIPO (CORREGIDO)
+  const conMat=dG.filter(r=>yes(r[GK.HAY_MAT]));
+  const corrMap=countMap(conMat,GK.CORRESPONDE);
+  donut("g-cCorr",Object.keys(corrMap),Object.values(corrMap),["#0D7A43","#B86A0A","#B91C1C","#8A97AE"].concat(PAL));
 
-    {
-      type:"bar",
+  // 4. Estado del material — usa ESTADO_MATERIAL (CORREGIDO, antes mostraba ENCARGADO_CONOCE_PROMO)
+  const estadoMap=countMap(conMat,GK.ESTADO_MAT);
+  donut("g-cEstado",Object.keys(estadoMap),Object.values(estadoMap),["#0D7A43","#B86A0A","#B91C1C","#0096FF","#7C3AED"].concat(PAL));
 
-      data:{
-        labels:Object.keys(estadoMap),
+  // 5. Encargado conoce la promo
+  const cBien=dG.filter(r=>yes(r[GK.ENCARGADO])).length;
+  const cParc=dG.filter(r=>NU(r[GK.ENCARGADO]).includes("PARCIAL")).length;
+  const cNo=dG.length-cBien-cParc;
+  donut("g-cConoce",["La conoce bien","Parcialmente","No la conoce"],[cBien,cParc,cNo],["#0D7A43","#B86A0A","#B91C1C"]);
 
-        datasets:[{
-          label:"Cantidad",
-          data:Object.values(estadoMap)
-        }]
-      }
-    }
+  // 6. Competencia
+  const ccSi=dC.filter(r=>yes(r[CK.HAY_COMP])).length;
+  donut("g-cComp",["Con competencia","Sin competencia"],[ccSi,dC.length-ccSi],["#B91C1C","#E2E8F4"]);
 
-  );
+  // 7. Tipos de local
+  const tipoMap=countMap(dG,GK.TIPO);
+  donut("g-cTipo",Object.keys(tipoMap),Object.values(tipoMap),PAL);
 
-  // COMP
-
-  const compYes =
-    comp.filter(
-      i => i.hayCompetencia === "SI"
-    ).length;
-
-  const compNo =
-    comp.length - compYes;
-
-  chartComp = new Chart(
-
-    document.getElementById("chartComp"),
-
-    {
-      type:"doughnut",
-
-      data:{
-        labels:["SI","NO"],
-
-        datasets:[{
-          data:[compYes,compNo]
-        }]
-      }
-    }
-
-  );
-
-}
-
-// ======================================================
-// TABLE
-// ======================================================
-
-function renderTable(data){
-
-  const tbody =
-    document.getElementById(
-      "tableBody"
-    );
-
-  tbody.innerHTML = "";
-
-  data.forEach(item => {
-
-    const tr =
-      document.createElement("tr");
-
-    tr.innerHTML = `
-      <td>${item.fecha}</td>
-      <td>${item.local}</td>
-      <td>${item.ciudad}</td>
-      <td>${item.hayMaterial}</td>
-      <td>${item.conocePromo}</td>
-    `;
-
-    tbody.appendChild(tr);
-
+  // 8. Beneficio exhibido — barras horizontales
+  killChart("gBenef");
+  const benefMap=countMap(conMat,GK.BENEF_EXH);
+  const bs=Object.entries(benefMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  charts.gBenef=new Chart(document.getElementById("g-cBenef"),{
+    type:"bar",
+    data:{labels:bs.map(e=>e[0].substring(0,38)+(e[0].length>38?"…":"")),
+      datasets:[{label:"Locales",data:bs.map(e=>e[1]),backgroundColor:"#1565C0",borderRadius:5,barPercentage:.65}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:"#EEF2FF"},ticks:{font:{size:10}}},
+              y:{grid:{display:false},ticks:{font:{size:10}}}}}
   });
-
 }
 
-// ======================================================
-// DRIVE IMAGE
-// ======================================================
+// Tabla gastro: columnas priorizadas + fotos
+function renderGastroTable(){
+  const q=state.g.q.toLowerCase();
+  const src=q ? filtG.filter(r=>JSON.stringify(Object.values(r)).toLowerCase().includes(q)) : filtG;
+  const availKeys=src.length?Object.keys(src[0]):Object.keys(dedG[0]||{});
+  const cols=G_TABLE_COLS.filter(k=>availKeys.includes(k));
+  const phCols=PHOTO_G.filter(k=>availKeys.includes(k));
 
-function convertDriveUrl(url){
+  document.getElementById("g-tHead").innerHTML=
+    [...cols,phCols.length?"📷 Fotos":""].filter(Boolean).map(c=>{
+      const label=c==="📷 Fotos"?"📷 Fotos":c.replace(/_/g," ");
+      const cls=state.g.sort===c?(state.g.dir===1?"sa":"sd"):"";
+      return`<th onclick="sortTbl('g','${c}')" class="${cls}">${label}</th>`;
+    }).join("");
 
-  if(!url) return "";
-
-  if(url.includes("id=")){
-
-    const id =
-      url.split("id=")[1]
-      .split("&")[0];
-
-    return `
-      https://drive.google.com/thumbnail?id=${id}
-    `;
-
+  let rows=[...src];
+  if(state.g.sort){
+    rows.sort((a,b)=>{const va=NU(a[state.g.sort]),vb=NU(b[state.g.sort]);return va<vb?-state.g.dir:va>vb?state.g.dir:0;});
   }
-
-  const match =
-    url.match(/\/d\/(.*?)\//);
-
-  if(match && match[1]){
-
-    return `
-      https://drive.google.com/thumbnail?id=${match[1]}
-    `;
-
-  }
-
-  return url;
-
+  const tot=rows.length,page=rows.slice((state.g.pg-1)*PG,state.g.pg*PG);
+  set("g-tblCnt",tot+" locales únicos");
+  const body=document.getElementById("g-tBody");
+  if(!page.length){body.innerHTML=`<tr class="empty-row"><td colspan="${cols.length+1}">Sin resultados</td></tr>`;renderPgn("g",tot);return;}
+  body.innerHTML=page.map(r=>{
+    const cells=cols.map(c=>{
+      const v=r[c]!=null?N(r[c]):"";
+      if(c===GK.FECHA)return`<td class="dt">${excelDate(v)}</td>`;
+      if(c===GK.LOCAL)return`<td class="nm">${v||"—"}</td>`;
+      if(c===GK.CIUDAD)return`<td class="ciudad">${v||"—"}</td>`;
+      if(isPillColG(c))return`<td>${mkPill(v)}</td>`;
+      return`<td class="obs" title="${v.replace(/"/g,"&quot;")}">${v||"—"}</td>`;
+    }).join("");
+    const fotos=phCols.length?`<td><div class="photo-strip">${phCols.map(k=>mkThumbCell(r[k],N(r[GK.LOCAL]))).join("")}</div></td>`:"";
+    return`<tr>${cells}${fotos}</tr>`;
+  }).join("");
+  renderPgn("g",tot);
 }
 
-// ======================================================
-// PHOTOS
-// ======================================================
+function renderGastroFotos(){
+  const photos=[];
+  filtG.forEach(r=>{
+    const lbl=N(r[GK.LOCAL])||"Local";
+    PHOTO_G.forEach(k=>{const v=N(r[k]);if(v)photos.push({url:v,lbl,key:k.replace(/_/g," ")});});
+  });
+  renderPhotoGrid("g-fotosGrid",photos);
+}
 
-function renderPhotos(data){
+// ══════════════════════════════════════════════════════════
+// COMPETENCIA
+// ══════════════════════════════════════════════════════════
+function renderComp(){
+  const dC=filtC;
+  const nComp=dC.filter(r=>yes(r[CK.HAY_COMP])).length;
+  set("c-tot",nComp);
 
-  const grid =
-    document.getElementById(
-      "photosGrid"
-    );
+  // Visibilidad más visible
+  const masVis=dC.filter(r=>NU(r[CK.VIS]).includes("MAS VISIBLE")||NU(r[CK.VIS]).includes("MÁS VISIBLE")).length;
+  set("c-masvis",masVis);
+  set("c-cnt",dC.length+" registros");
 
-  grid.innerHTML = "";
-
-  data.forEach(item => {
-
-    item.fotos.forEach(photo => {
-
-      const img =
-        convertDriveUrl(photo);
-
-      const card =
-        document.createElement("div");
-
-      card.className =
-        "photo-card";
-
-      card.innerHTML = `
-        <a href="${photo}" target="_blank">
-
-          <img
-            loading="lazy"
-            src="${img}"
-
-            onerror="
-              this.src='https://via.placeholder.com/150?text=Sin+Imagen'
-            "
-          >
-
-        </a>
-
-        <p>${item.local}</p>
-      `;
-
-      grid.appendChild(card);
-
+  const marcaSet=new Set();
+  const marcaCount={};
+  dC.forEach(r=>{
+    N(r[CK.MARCAS]).split(",").forEach(m=>{
+      const mv=m.replace(/Otro banco\s*[—–-]/i,"").trim();
+      if(mv){marcaSet.add(mv);marcaCount[mv]=(marcaCount[mv]||0)+1;}
     });
+  });
+  set("c-marcas",marcaSet.size);
+  set("c-ciud",uniq(dC.map(r=>r[CK.CIUDAD])).length);
 
+  const ms=Object.entries(marcaCount).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  const mx=ms.length?ms[0][1]:1;
+  document.getElementById("c-marcaBars").innerHTML=ms.map(([nm,n],i)=>
+    `<div class="ent-bar"><span class="ent-nm" title="${nm}">${nm}</span>
+     <div class="ent-trk"><div class="ent-fill" style="width:${Math.round(n/mx*100)}%;background:${PAL[i%PAL.length]}"></div></div>
+     <span class="ent-n">${n}</span></div>`
+  ).join("")||`<div style="color:var(--tx3);padding:8px">Sin datos de marcas</div>`;
+
+  // Visibilidad vs BF — donut
+  const visMap=countMap(dC.filter(r=>yes(r[CK.HAY_COMP])),CK.VIS);
+  donut("c-vis",Object.keys(visMap),Object.values(visMap),["#B91C1C","#B86A0A","#0D7A43","#8A97AE"]);
+
+  // Tipos de promo competencia — donut
+  killChart("cPromo");
+  const pc=countMap(dC.filter(r=>N(r[CK.TIPO_PROMO])),CK.TIPO_PROMO);
+  if(Object.keys(pc).length){
+    charts.cPromo=new Chart(document.getElementById("c-promo"),{
+      type:"doughnut",
+      data:{labels:Object.keys(pc),datasets:[{data:Object.values(pc),backgroundColor:PAL,borderWidth:3,borderColor:"#fff"}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:"55%",
+        plugins:{legend:{position:"right",labels:{font:{size:11},padding:8,boxWidth:11}}}}
+    });
+  }
+
+  // Por ciudad
+  killChart("cCiudad");
+  const cc={};dC.filter(r=>yes(r[CK.HAY_COMP])).forEach(r=>{const c=N(r[CK.CIUDAD])||"Sin ciudad";cc[c]=(cc[c]||0)+1;});
+  const ccs=Object.entries(cc).sort((a,b)=>b[1]-a[1]);
+  charts.cCiudad=new Chart(document.getElementById("c-ciudad"),{
+    type:"bar",
+    data:{labels:ccs.map(e=>e[0]),datasets:[{label:"Con competencia",data:ccs.map(e=>e[1]),backgroundColor:"#B91C1C",borderRadius:6,barPercentage:.65}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:11},maxRotation:40}},
+              y:{grid:{color:"#FFF0F0"},ticks:{font:{size:11},stepSize:1}}}}
   });
 
+  // Tabla competencia con paginación
+  renderCompTable();
 }
 
-// ======================================================
-// START
-// ======================================================
+function renderCompTable(){
+  const q=state.c.q.toLowerCase();
+  const src=q ? filtC.filter(r=>JSON.stringify(Object.values(r)).toLowerCase().includes(q)) : filtC;
+  const availKeys=src.length?Object.keys(src[0]):Object.keys(dedC[0]||{});
+  const cols=C_TABLE_COLS.filter(k=>availKeys.includes(k));
+  const phCols=PHOTO_C.filter(k=>availKeys.includes(k));
 
-init();
+  document.getElementById("c-tHead").innerHTML=
+    [...cols,phCols.length?"📷":""].filter(Boolean).map(c=>`<th>${c.replace(/_/g," ")}</th>`).join("");
 
+  let rows=[...src];
+  const tot=rows.length,page=rows.slice((state.c.pg-1)*PG,state.c.pg*PG);
+  document.getElementById("c-tBody").innerHTML=page.map(r=>{
+    const cells=cols.map(c=>{
+      const v=N(r[c]||"");
+      if(c===CK.FECHA)return`<td class="dt">${excelDate(v)}</td>`;
+      if(c===CK.LOCAL)return`<td class="nm">${v||"—"}</td>`;
+      if(c===CK.CIUDAD)return`<td class="ciudad">${v||"—"}</td>`;
+      if(isPillColC(c))return`<td>${mkPill(v)}</td>`;
+      return`<td class="obs" title="${v.replace(/"/g,"&quot;")}">${v||"—"}</td>`;
+    }).join("");
+    const fotos=phCols.length?`<td><div class="photo-strip">${phCols.map(k=>mkThumbCell(r[k],N(r[CK.LOCAL]))).join("")}</div></td>`:"";
+    return`<tr>${cells}${fotos}</tr>`;
+  }).join("");
+  renderPgn("c",tot);
+}
+
+function onSearchC(){state.c.q=document.getElementById("c-search").value;state.c.pg=1;renderCompTable();}
+
+// ══════════════════════════════════════════════════════════
+// TIENDAS RENDER
+// ══════════════════════════════════════════════════════════
+function renderTiendas(){
+  renderTiendasKPIs();
+  renderTiendasCharts();
+  renderTiendasTable();
+  renderTiendasFotos();
+}
+
+function renderTiendasKPIs(){
+  const d=filtT,n=d.length;
+  const conMat=d.filter(r=>N(r[TK.MAT_ENC])!=="Ninguno"&&N(r[TK.MAT_ENC])!=="").length;
+  const visDesde=d.filter(r=>NU(r[TK.ESTADO]).includes("VISIBLE DESDE")||NU(r[TK.ESTADO]).includes("SÍ, VISIBLE")).length;
+  const conComp=d.filter(r=>N(r[TK.MAT_COMP])!=="No"&&N(r[TK.MAT_COMP])!=="").length;
+  const conBien=d.filter(r=>NU(r[TK.CONOCE])==="SÍ"||NU(r[TK.CONOCE])==="SI").length;
+
+  set("t-tot",n);set("t-tot-s","tiendas registradas");
+  set("t-mat",pct(conMat,n));set("t-mat-s",conMat+" de "+n);
+  set("t-vis",pct(visDesde,n));set("t-vis-s",visDesde+" visible desde vidriera");
+  set("t-comp",pct(conComp,n));set("t-comp-s",conComp+" de "+n);
+  set("t-con",pct(conBien,n));set("t-con-s",conBien+" de "+n);
+}
+
+function renderTiendasCharts(){
+  const d=filtT;
+
+  // 1. Estado del material
+  killChart("tEstado");
+  const em=countMap(d.filter(r=>N(r[TK.MAT_ENC])!=="Ninguno"&&N(r[TK.MAT_ENC])!==""),TK.ESTADO);
+  const es=Object.entries(em).sort((a,b)=>b[1]-a[1]);
+  charts.tEstado=new Chart(document.getElementById("t-cEstado"),{
+    type:"bar",
+    data:{labels:es.map(e=>e[0]),datasets:[{label:"Tiendas",data:es.map(e=>e[1]),backgroundColor:PAL,borderRadius:6,barPercentage:.72}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>" "+c.parsed.y+" tiendas"}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10},maxRotation:45}},
+              y:{grid:{color:"#EEF2FF"},ticks:{font:{size:10},stepSize:1}}}}
+  });
+
+  // 2. Material BF
+  const mSi=d.filter(r=>N(r[TK.MAT_ENC])!=="Ninguno"&&N(r[TK.MAT_ENC])!=="").length;
+  donut("t-cMat",["Con material BF","Sin material (Ninguno)"],[mSi,d.length-mSi],["#0D7A43","#B91C1C"]);
+
+  // 3. Muestra promo
+  const mpSi=d.filter(r=>yes(r[TK.MUESTRA])).length;
+  const mpNo=d.filter(r=>NU(r[TK.MUESTRA])==="NO"||N(r[TK.MUESTRA])==="").length;
+  donut("t-cPromo",["Muestra promo","No muestra"],[mpSi,d.length-mpSi],["#0096FF","#B91C1C"]);
+
+  // 4. Conoce la promo
+  const cpSi=d.filter(r=>NU(r[TK.CONOCE])==="SÍ"||NU(r[TK.CONOCE])==="SI").length;
+  const cpNo=d.filter(r=>NU(r[TK.CONOCE])==="NO").length;
+  const cpOtro=d.length-cpSi-cpNo;
+  donut("t-cConoce",["Sí","No","No verificado"],[cpSi,cpNo,cpOtro],["#0D7A43","#B91C1C","#8A97AE"]);
+
+  // 5. Competencia
+  const ccSi=d.filter(r=>N(r[TK.MAT_COMP])!=="No"&&N(r[TK.MAT_COMP])!=="").length;
+  donut("t-cComp",["Con competencia","Sin competencia"],[ccSi,d.length-ccSi],["#B91C1C","#E2E8F4"]);
+
+  // 6. Marca/cadena — barras agrupadas (con material vs sin material)
+  killChart("tMarca");
+  const marcas=[...new Set(d.map(r=>extractBrand(r[TK.LOCAL])).filter(Boolean))].sort();
+  const marcaConMat=marcas.map(m=>{
+    const recs=d.filter(r=>extractBrand(r[TK.LOCAL])===m);
+    return recs.filter(r=>N(r[TK.MAT_ENC])!=="Ninguno"&&N(r[TK.MAT_ENC])!=="").length;
+  });
+  const marcaSinMat=marcas.map(m=>{
+    const recs=d.filter(r=>extractBrand(r[TK.LOCAL])===m);
+    return recs.filter(r=>N(r[TK.MAT_ENC])==="Ninguno"||N(r[TK.MAT_ENC])==="").length;
+  });
+  charts.tMarca=new Chart(document.getElementById("t-cMarca"),{
+    type:"bar",
+    data:{labels:marcas,datasets:[
+      {label:"Con material BF",data:marcaConMat,backgroundColor:"#0D7A43",borderRadius:4,barPercentage:.6},
+      {label:"Sin material",data:marcaSinMat,backgroundColor:"#B91C1C",borderRadius:4,barPercentage:.6}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:"top",labels:{font:{size:11},boxWidth:12,padding:12}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10},maxRotation:40}},
+              y:{grid:{color:"#EEF2FF"},ticks:{font:{size:10},stepSize:1},stacked:false}}}
+  });
+}
+
+function renderTiendasTable(){
+  const q=state.t.q.toLowerCase();
+  const src=q?filtT.filter(r=>JSON.stringify(Object.values(r)).toLowerCase().includes(q)):filtT;
+  const availKeys=src.length?Object.keys(src[0]):Object.keys(allT[0]||{});
+  const cols=T_TABLE_COLS.filter(k=>availKeys.includes(k));
+
+  document.getElementById("t-tHead").innerHTML=
+    cols.map(c=>{
+      const cls=state.t.sort===c?(state.t.dir===1?"sa":"sd"):"";
+      return`<th onclick="sortTbl('t','${c}')" class="${cls}">${c}</th>`;
+    }).join("");
+
+  let rows=[...src];
+  if(state.t.sort){rows.sort((a,b)=>{const va=NU(a[state.t.sort]),vb=NU(b[state.t.sort]);return va<vb?-state.t.dir:va>vb?state.t.dir:0;});}
+  const tot=rows.length,page=rows.slice((state.t.pg-1)*PG,state.t.pg*PG);
+  set("t-tblCnt",tot+" tiendas");
+  const body=document.getElementById("t-tBody");
+  if(!page.length){body.innerHTML=`<tr class="empty-row"><td colspan="${cols.length}">Sin resultados</td></tr>`;renderPgn("t",tot);return;}
+  body.innerHTML=page.map(r=>{
+    const cells=cols.map(c=>{
+      const v=r[c]!=null?N(r[c]):"";
+      if(c===TK.FECHA)return`<td class="dt">${excelDate(v)}</td>`;
+      if(c===TK.LOCAL){
+        const brand=extractBrand(v);
+        const loc=v.indexOf(' — ')>0?v.substring(v.indexOf(' — ')+3):"";
+        return`<td class="nm">${brand}${loc?`<br><small style="color:var(--tx3);font-size:11px">${loc}</small>`:""}`;
+      }
+      if(isPillColT(c))return`<td>${mkPill(v)}</td>`;
+      return`<td class="obs" title="${v.replace(/"/g,"&quot;")}">${v||"—"}</td>`;
+    }).join("");
+    return`<tr>${cells}</tr>`;
+  }).join("");
+  renderPgn("t",tot);
+}
+
+function renderTiendasFotos(){
+  const photos=[];
+  filtT.forEach(r=>{
+    const lbl=N(r[TK.LOCAL])||"Tienda";
+    PHOTO_T.forEach(k=>{const v=N(r[k]);if(v)photos.push({url:v,lbl,key:k});});
+  });
+  renderPhotoGrid("t-fotosGrid",photos);
+}
+
+// ══════════════════════════════════════════════════════════
+// GALERÍA FOTOS
+// ══════════════════════════════════════════════════════════
+function renderPhotoGrid(gridId,photos){
+  const g=document.getElementById(gridId);
+  if(!g)return;
+  if(!photos.length){
+    g.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--tx3);padding:40px;font-style:italic">No hay fotos disponibles.</div>';
+    return;
+  }
+  g.innerHTML=photos.slice(0,300).map(p=>{
+    const info=driveThumb(p.url);
+    const lbl=(p.lbl||"").replace(/"/g,"&quot;");
+    const key=(p.key||"").replace(/"/g,"&quot;");
+    if(!info)return`<div class="gal-item"><div class="gal-placeholder"><span>📷</span><small>Sin preview</small></div></div>`;
+    const thu=info.thumb.replace(/"/g,"&quot;");
+    const viw=info.view.replace(/"/g,"&quot;");
+    return`<div class="gal-item" onclick="openModal('${viw}','${thu}','${lbl} · ${key}')">
+      <img src="${thu}" alt="${lbl}" loading="lazy"
+           onerror="this.parentElement.innerHTML='<div class=\\'gal-placeholder\\'><span>🚫</span><small>No carga</small></div>'">
+      <div class="gal-overlay"><span>${lbl}</span><span style="opacity:.8;font-size:9px">${key}</span></div>
+    </div>`;
+  }).join("");
+}
+
+function mkThumbCell(url,lbl){
+  if(!url||!N(url))return'<div class="thumb-link"><div class="no-img">📷</div></div>';
+  const info=driveThumb(N(url));
+  if(!info)return'<div class="thumb-link"><div class="no-img">🔗</div></div>';
+  const th=info.thumb.replace(/"/g,"&quot;");
+  const vw=info.view.replace(/"/g,"&quot;");
+  const lb=(lbl||"").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  return`<div class="thumb-link" onclick="openModal('${vw}','${th}','${lb}')" title="${lb}">
+    <img src="${th}" alt="${lb}" loading="lazy"
+         onerror="this.outerHTML='<div class=\\'no-img\\'>🚫</div>'">
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+// PILLS — cobertura completa de valores reales del Excel
+// ══════════════════════════════════════════════════════════
+function isPillColG(c){
+  const u=c.toUpperCase();
+  return u===GK.HAY_MAT||u===GK.CORRESPONDE||u===GK.ENCARGADO
+      ||u===GK.OFERTA_OK||u===GK.HAY_ANT||c===GK.HAY_MAT||c===GK.CORRESPONDE
+      ||c===GK.ENCARGADO||c===GK.OFERTA_OK||c===GK.HAY_ANT;
+}
+function isPillColT(c){
+  return c===TK.MUESTRA||c===TK.CONOCE||c===TK.ESTADO;
+}
+function isPillColC(c){
+  return c===CK.HAY_COMP||c===CK.HAY_PROMO||c===CK.VIS;
+}
+function mkPill(v){
+  const u=NU(v);
+  // Positivos
+  if(u==="SI"||u==="SÍ"||u==="SÍ"||(u.startsWith("SI,")&&!u.includes("MAL"))
+    ||u.includes("CONOCE BIEN")||u==="SÍ, VISIBLE DESDE AFUERA")
+    return`<span class="pill p-g">✓ ${v||"Sí"}</span>`;
+  // Negativo explícito
+  if(u==="NO"||u==="NO LA CONOCE"||u==="NO ESTÁ COLOCADO"||u==="NO APLICA"||u==="NINGUNO")
+    return`<span class="pill p-r">✗ ${v||"No"}</span>`;
+  // Parcial / advertencia
+  if(u.includes("PARCIAL")||u.includes("MAL UBI")||u.includes("DETERIORADO")
+    ||u.includes("VISIBLE PERO")||u.includes("COLOCADO PERO")||u.includes("CAMPAÑA ANTERIOR"))
+    return`<span class="pill p-a">⚠ ${v}</span>`;
+  // Corresponde al tipo
+  if(u.includes("CORRESPONDE"))
+    return`<span class="pill p-g">✓ Corresponde</span>`;
+  if(u.includes("CAMPAÑA ANTERIOR")||u.includes("ANTERIOR"))
+    return`<span class="pill p-a">⚡ Material anterior</span>`;
+  // Visibilidad vs competencia
+  if(u.includes("MAS VISIBLE")||u.includes("MÁS VISIBLE"))
+    return`<span class="pill p-r">↑ Más visible</span>`;
+  if(u.includes("MENOS VISIBLE"))
+    return`<span class="pill p-g">↓ Menos visible</span>`;
+  if(u.includes("SIMILAR"))
+    return`<span class="pill p-a">≈ Similar</span>`;
+  if(!u)return`<span class="pill p-x">—</span>`;
+  return`<span class="pill p-b">${v}</span>`;
+}
+
+// ══════════════════════════════════════════════════════════
+// SORT / SEARCH / PAGINATION
+// ══════════════════════════════════════════════════════════
+function onSearch(t){state[t].q=document.getElementById(t+"-search").value;state[t].pg=1;t==="g"?renderGastroTable():renderTiendasTable();}
+function sortTbl(t,col){
+  state[t].sort===col?state[t].dir*=-1:(state[t].sort=col,state[t].dir=1);
+  t==="g"?renderGastroTable():renderTiendasTable();
+}
+function renderPgn(t,tot){
+  const tp=Math.ceil(tot/PG),cur=state[t].pg;
+  const el=document.getElementById(t+"-pgn");
+  if(!el)return;
+  if(tp<=1){el.innerHTML="";return;}
+  let h=`<button class="pg-b ${cur===1?"dis":""}" onclick="goPg('${t}',${cur-1})">‹</button>`;
+  for(let i=1;i<=tp;i++){
+    if(i===1||i===tp||Math.abs(i-cur)<=1)h+=`<button class="pg-b ${i===cur?"act":""}" onclick="goPg('${t}',${i})">${i}</button>`;
+    else if(Math.abs(i-cur)===2)h+=`<span style="padding:0 4px;color:var(--tx3)">…</span>`;
+  }
+  h+=`<button class="pg-b ${cur===tp?"dis":""}" onclick="goPg('${t}',${cur+1})">›</button>`;
+  el.innerHTML=h;
+}
+function goPg(t,p){
+  const tot=t==="g"?filtG.length:t==="t"?filtT.length:filtC.length;
+  const tp=Math.ceil(tot/PG);
+  if(p<1||p>tp)return;
+  state[t].pg=p;
+  if(t==="g")renderGastroTable();
+  else if(t==="t")renderTiendasTable();
+  else renderCompTable();
+}
+
+// ══════════════════════════════════════════════════════════
+// EXPORT
+// ══════════════════════════════════════════════════════════
+function exportExcel(t){
+  const data=t==="g"?filtG:filtT;
+  const availKeys=data.length?Object.keys(data[0]):[];
+  const cols=t==="g"
+    ? G_TABLE_COLS.filter(k=>availKeys.includes(k))
+    : T_TABLE_COLS.filter(k=>availKeys.includes(k));
+  if(!data.length){alert("No hay datos para exportar.");return;}
+  const rows=[cols];
+  data.forEach(r=>rows.push(cols.map(c=>{
+    if((c===GK.FECHA||c===TK.FECHA)&&r[c])return excelDate(r[c]);
+    return r[c]||"";
+  })));
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),t==="g"?"Gastro":"Tiendas");
+  XLSX.writeFile(wb,`relevamiento_bf_${t==="g"?"gastro":"tiendas"}.xlsx`);
+}
+
+// ══════════════════════════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════════════════════════
+function openModal(viewUrl,thumbUrl,lbl){
+  const m=document.getElementById("modal");
+  const img=document.getElementById("mImg");
+  document.getElementById("mTitle").textContent=lbl||"Foto";
+  document.getElementById("mLink").href=viewUrl;
+  img.src=thumbUrl||viewUrl;
+  img.onerror=()=>{img.src=viewUrl;};
+  m.classList.add("open");
+  document.body.style.overflow="hidden";
+}
+function closeModal(){
+  document.getElementById("modal").classList.remove("open");
+  document.body.style.overflow="";
+  document.getElementById("mImg").src="";
+}
+function closeModalBg(e){if(e.target===document.getElementById("modal"))closeModal();}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
+
+// ══════════════════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════════════════
+loadAll();
 </script>
-
 </body>
 </html>
