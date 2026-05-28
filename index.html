@@ -10,6 +10,8 @@
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 /* ============================================================
    TABLERO EJECUTIVO — styles
@@ -367,6 +369,95 @@ function lbNav(d){ lbIdx=Math.max(0,Math.min(lbPhotos.length-1,lbIdx+d)); _updLB
 function closeLB(){ document.getElementById('lb').classList.remove('open'); document.getElementById('lb-frame').src=''; }
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeLB(); });
 
+/* ── EXPORT PDF ── */
+async function exportPDF() {
+  const btn = document.getElementById('export-btn');
+  if (btn) { btn.textContent = 'Generando…'; btn.disabled = true; }
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const content   = document.querySelector('.pages');
+    if (!content) throw new Error('No se encontró el contenido');
+
+    // Temporarily expand for full capture
+    const origOverflow = content.style.overflow;
+    content.style.overflow = 'visible';
+
+    const canvas = await html2canvas(content, {
+      scale: 1.8,
+      useCORS: true,
+      allowTaint: false,
+      backgroundColor: '#EEF6FC',
+      logging: false,
+      windowWidth: 1280,
+    });
+
+    content.style.overflow = origOverflow;
+
+    const imgW  = 210;           // A4 width mm
+    const imgH  = (canvas.height * imgW) / canvas.width;
+    const pdf   = new jsPDF({ orientation: imgH > 297 ? 'p' : 'p', unit: 'mm', format: 'a4' });
+
+    // Page title metadata
+    pdf.setProperties({
+      title:   'Tablero de Relevamiento — Banco Familiar',
+      subject: 'Relevamiento de materiales publicitarios',
+      author:  '+Marka',
+      creator: '+Marka Dashboard',
+    });
+
+    // If content taller than one A4 page, split into multiple pages
+    const pageH = 297;
+    const pxPerMm = canvas.width / imgW;
+    const pageHpx = pageH * pxPerMm;
+    let yOffset = 0;
+    let pageNum = 0;
+
+    while (yOffset < canvas.height) {
+      if (pageNum > 0) pdf.addPage();
+      const remaining = canvas.height - yOffset;
+      const sliceH    = Math.min(pageHpx, remaining);
+
+      // Draw slice of canvas onto a temp canvas
+      const tmp = document.createElement('canvas');
+      tmp.width  = canvas.width;
+      tmp.height = sliceH;
+      const ctx = tmp.getContext('2d');
+      ctx.drawImage(canvas, 0, -yOffset);
+
+      const imgData = tmp.toDataURL('image/jpeg', 0.92);
+      const sliceHmm = (sliceH / canvas.width) * imgW;
+      pdf.addImage(imgData, 'JPEG', 0, 0, imgW, sliceHmm);
+
+      yOffset += pageHpx;
+      pageNum++;
+    }
+
+    // Header strip on every page with branding
+    for (let p = 1; p <= pdf.getNumberOfPages(); p++) {
+      pdf.setPage(p);
+      pdf.setFillColor(13, 92, 155);
+      pdf.rect(0, 0, 210, 7, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(7);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('+MARKA · Tablero de Relevamiento · Banco Familiar', 5, 4.8);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Pág. ${p} de ${pdf.getNumberOfPages()}`, 200, 4.8, { align: 'right' });
+    }
+
+    const today = new Date().toLocaleDateString('es-PY').replace(/\//g,'-');
+    pdf.save(`Tablero_BF_${today}.pdf`);
+
+  } catch (err) {
+    console.error('Error exportando PDF:', err);
+    alert('No se pudo generar el PDF. Intentá nuevamente.');
+  } finally {
+    if (btn) { btn.textContent = 'Exportar PDF'; btn.disabled = false; }
+  }
+}
+window.exportPDF = exportPDF;
+
 function driveThumb(url){
   if(!url) return null;
   const m=url.match(/\/d\/([a-zA-Z0-9_\-]+)/);
@@ -574,7 +665,7 @@ function Topbar({ title, sub, badge }) {
       <div><div className="tb-title">{title}</div><div className="tb-sub">{sub}</div></div>
       <div className="tb-right">
         <span className="tb-badge">{badge}</span>
-        <button className="tb-btn">Exportar PDF</button>
+        <button id="export-btn" className="tb-btn" onClick={() => window.exportPDF()}>Exportar PDF</button>
       </div>
     </header>
   );
