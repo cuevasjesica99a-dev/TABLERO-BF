@@ -283,6 +283,180 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .ev-tab:hover { background:var(--bsoft); color:var(--navy); }
 .ev-tab.active { background:var(--navy); color:#fff; border-color:var(--navy); }
 .rc-right { font-size:11px; color:var(--muted); margin-left:auto; font-weight:600; }
+
+/* ── REPORT A4 (verbatim from design system) ── */
+/* ============================================================
+   INFORME GERENCIAL — layout A4 + reglas de impresión
+   El informe vive siempre en el DOM. En pantalla está oculto;
+   se muestra como overlay de vista previa al pulsar "Exportar PDF",
+   y en @media print SOLO se imprime el informe (no el tablero).
+   ============================================================ */
+
+/* ---------- PANTALLA: oculto salvo vista previa ---------- */
+.report-root { display: none; }
+.report-root.open {
+  display: block; position: fixed; inset: 0; z-index: 2000;
+  background: #51606E; overflow: auto;
+}
+
+/* barra superior de la vista previa */
+.report-bar {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 22px; background: #0A4A80;
+  box-shadow: 0 2px 14px rgba(0,0,0,.35);
+}
+.report-bar .rb-title { color: #fff; font-size: 13px; font-weight: 600; }
+.report-bar .rb-sub { color: rgba(255,255,255,.6); font-size: 11px; }
+.report-bar .rb-spacer { flex: 1; }
+.report-bar button {
+  font-family: inherit; font-size: 12px; font-weight: 600;
+  padding: 9px 18px; border-radius: 8px; cursor: pointer; border: 1px solid transparent;
+  transition: all .15s;
+}
+.report-bar .rb-print { background: #F5A800; color: #5C4000; }
+.report-bar .rb-print:hover { background: #ffba1f; }
+.report-bar .rb-close { background: transparent; color: #fff; border-color: rgba(255,255,255,.3); }
+.report-bar .rb-close:hover { background: rgba(255,255,255,.12); }
+
+/* contenedor de páginas en pantalla */
+.report-pages { padding: 28px 0 48px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+
+/* ---------- HOJA A4 ---------- */
+.a4 {
+  width: 210mm; min-height: 297mm; background: #fff;
+  box-shadow: 0 8px 40px rgba(0,0,0,.4);
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column;
+  color: #0B2A4A; font-family: 'Inter', sans-serif;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+
+/* encabezado de página */
+.a4-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 16mm 16mm 0;
+}
+.a4-eyebrow { font-size: 8.5pt; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #4A7CA0; }
+.a4-title { font-size: 19pt; font-weight: 700; color: #0D5C9B; letter-spacing: -.01em; margin-top: 4px; }
+.a4-logo { height: 26px; width: auto; }
+.a4-rule { height: 3px; background: linear-gradient(90deg,#0D5C9B,#2E8FD4 60%,#F5A800); margin: 10px 16mm 0; border-radius: 2px; }
+
+.a4-body { flex: 1; padding: 9mm 16mm 0; }
+
+.a4-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16mm 12mm; margin-top: auto;
+  font-size: 8pt; color: #7EB3D4; border-top: 1px solid #DCF0FA; padding-top: 6px;
+}
+.a4-foot span:first-child { color: #4A7CA0; font-weight: 500; }
+
+/* ---------- PORTADA ---------- */
+.a4.cover {
+  background: linear-gradient(150deg,#0A4A80 0%,#0D5C9B 52%,#2E8FD4 100%);
+  color: #fff; padding: 0;
+}
+.cover-inner { flex: 1; display: flex; flex-direction: column; padding: 30mm 22mm; position: relative; z-index: 1; }
+.cover::after { content:''; position:absolute; right:-80px; top:-80px; width:340px; height:340px; border-radius:50%; background:rgba(255,255,255,.06); }
+.cover::before { content:''; position:absolute; left:-60px; bottom:60px; width:220px; height:220px; border-radius:50%; background:rgba(255,255,255,.05); }
+.cover-logo { height: 38px; width: auto; align-self: flex-start; filter: brightness(0) invert(1); }
+.cover-eyebrow { margin-top: auto; font-size: 10pt; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #A8D8F0; }
+.cover-title { font-size: 34pt; font-weight: 800; line-height: 1.1; letter-spacing: -.01em; margin-top: 10px; max-width: 14ch; }
+.cover-sub { font-size: 13pt; color: rgba(255,255,255,.85); margin-top: 16px; font-weight: 500; }
+.cover-meta { margin-top: 34px; display: flex; gap: 36px; }
+.cover-meta .cm-k { font-size: 8.5pt; text-transform: uppercase; letter-spacing: .1em; color: rgba(255,255,255,.55); }
+.cover-meta .cm-v { font-size: 12pt; font-weight: 700; color: #fff; margin-top: 3px; }
+.cover-foot { margin-top: 30px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.18); font-size: 8.5pt; color: rgba(255,255,255,.6); line-height: 1.6; }
+
+/* ---------- BLOQUES DE CONTENIDO ---------- */
+.r-lead { font-size: 11.5pt; line-height: 1.65; color: #0B2A4A; margin-bottom: 8mm; }
+.r-lead b { color: #0D5C9B; }
+.r-seclbl { font-size: 9pt; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #4A7CA0; margin: 0 0 4mm; }
+.r-seclbl.mt { margin-top: 9mm; }
+
+/* KPIs */
+.r-kpis { display: grid; grid-template-columns: repeat(5,1fr); gap: 4mm; }
+.r-kpi { border: 1px solid #C8DFF0; border-radius: 9px; padding: 14px 13px; position: relative; overflow: hidden; }
+.r-kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+.r-kpi.b::before{background:#1A7AC2}.r-kpi.g::before{background:#1A7A4A}.r-kpi.r::before{background:#B03A2E}.r-kpi.y::before{background:#F5A800}
+.r-kpi .k-l { font-size: 8pt; text-transform: uppercase; letter-spacing: .06em; color: #4A7CA0; }
+.r-kpi .k-v { font-size: 27pt; font-weight: 800; color: #0D5C9B; line-height: 1; margin-top: 8px; }
+.r-kpi .k-s { font-size: 8.5pt; font-weight: 600; margin-top: 5px; }
+.r-kpi .k-s.pos{color:#1A7A4A}.r-kpi .k-s.neg{color:#B03A2E}.r-kpi .k-s.mid{color:#C0600A}.r-kpi .k-s.mut{color:#7EB3D4}
+
+/* hallazgos clave */
+.r-find { display: flex; flex-direction: column; gap: 4mm; }
+.r-find-row { display: flex; gap: 11px; align-items: flex-start; font-size: 10.5pt; line-height: 1.5; }
+.r-find-row .fi { width: 20px; height: 20px; border-radius: 5px; background: #EBF5FB; color: #0D5C9B; font-size: 9pt; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.r-find-row b { color: #0D5C9B; }
+
+/* dos columnas */
+.r-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 7mm; }
+.r-panel { border: 1px solid #C8DFF0; border-radius: 9px; overflow: hidden; }
+.r-panel-h { background: #F4FAFF; border-bottom: 1px solid #DCF0FA; padding: 9px 13px; font-size: 8.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: #0D5C9B; }
+.r-panel-b { padding: 14px; }
+
+/* barras horizontales */
+.r-hbar { display: flex; flex-direction: column; gap: 11px; }
+.r-hbar-row { display: flex; align-items: center; gap: 10px; }
+.r-hbar-lbl { font-size: 9.5pt; width: 100px; flex-shrink: 0; color: #0B2A4A; font-weight: 500; }
+.r-hbar-track { flex: 1; height: 16px; background: #EBF5FB; border-radius: 5px; overflow: hidden; }
+.r-hbar-fill { height: 100%; border-radius: 5px; }
+.r-hbar-val { font-size: 10.5pt; font-weight: 700; width: 24px; text-align: right; }
+
+/* barras agrupadas con/sin */
+.r-gbar { display: flex; align-items: flex-end; gap: 11px; height: 200px; padding-top: 18px; }
+.r-gbar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 7px; height: 100%; }
+.r-gbar-stack { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 4px; }
+.r-gbar-b { width: 44%; max-width: 24px; border-radius: 4px 4px 0 0; position: relative; min-height: 2px; }
+.r-gbar-b.con { background: #1D4ED8; } .r-gbar-b.sin { background: #CBD5E1; }
+.r-gbar-v { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); font-size: 8pt; font-weight: 700; color: #0B2A4A; }
+.r-gbar-lbl { font-size: 8pt; color: #4A7CA0; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+
+/* ranking */
+.r-rank { display: flex; flex-direction: column; gap: 9px; }
+.r-rank-row { display: flex; gap: 10px; align-items: flex-start; }
+.r-rank-i { width: 19px; height: 19px; border-radius: 5px; background: #EBF5FB; color: #0D5C9B; font-size: 8.5pt; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.r-rank-main { flex: 1; }
+.r-rank-top { display: flex; justify-content: space-between; align-items: baseline; }
+.r-rank-name { font-size: 9.5pt; font-weight: 600; }
+.r-rank-pct { font-size: 9.5pt; font-weight: 800; }
+.r-rank-track { height: 6px; border-radius: 3px; background: #EBF5FB; overflow: hidden; margin: 3px 0 2px; }
+.r-rank-fill { height: 100%; border-radius: 3px; }
+.r-rank-sub { font-size: 7.5pt; color: #7EB3D4; }
+
+/* donut */
+.r-donut { display: flex; align-items: center; gap: 18px; }
+.r-dl { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.r-dl-row { display: flex; align-items: center; gap: 8px; font-size: 9.5pt; }
+.r-dl-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+.r-dl-lab { color: #4A7CA0; flex: 1; }
+.r-dl-row b { color: #0D5C9B; }
+.r-dl-pct { color: #7EB3D4; font-size: 8.5pt; width: 30px; text-align: right; }
+
+/* leyenda */
+.r-leg { display: flex; gap: 14px; margin-bottom: 8px; }
+.r-leg-chip { display: flex; align-items: center; gap: 6px; font-size: 8pt; color: #4A7CA0; font-weight: 500; }
+.r-leg-dot { width: 8px; height: 8px; border-radius: 3px; }
+
+/* recomendaciones */
+.r-reco { border: 1px solid #C8DFF0; border-radius: 9px; padding: 14px 16px; background: #F4FAFF; }
+.r-reco-h { font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #0D5C9B; margin-bottom: 9px; }
+.r-reco ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 7px; }
+.r-reco li { font-size: 10pt; line-height: 1.5; color: #0B2A4A; }
+.r-reco li b { color: #0D5C9B; }
+
+/* ---------- IMPRESIÓN ---------- */
+@media print {
+  @page { size: A4 portrait; margin: 0; }
+  html, body { background: #fff !important; }
+  .shell, .report-bar { display: none !important; }
+  .report-root { display: block !important; position: static !important; background: #fff !important; overflow: visible !important; }
+  .report-pages { padding: 0 !important; gap: 0 !important; display: block !important; }
+  .a4 { box-shadow: none !important; margin: 0 !important; width: 210mm !important; min-height: 297mm; page-break-after: always; break-after: page; }
+  .a4:last-child { page-break-after: auto; break-after: auto; }
+}
+
 </style>
 </head>
 <body>
@@ -370,586 +544,19 @@ function closeLB(){ document.getElementById('lb').classList.remove('open'); docu
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeLB(); });
 
 /* ── EXPORT PDF ── */
-async function exportPDF() {
-  const btn = document.getElementById('export-btn');
-  if (btn) { btn.textContent = 'Generando…'; btn.disabled = true; }
-
-  try {
-    const { jsPDF } = window.jspdf;
-    const D = window.TableroData;
-    const k = D.kpi;
-
-    /* ── PAGE SETUP ── A4 landscape as slide ── */
-    const PW = 297, PH = 210;
-    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-    pdf.setProperties({
-      title: 'Tablero Ejecutivo — Banco Familiar · +Marka',
-      author: '+Marka', creator: '+Marka Dashboard',
-    });
-
-    /* ── DESIGN TOKENS ─────────────────────────────────── */
-    const NAVY   = [13,  92, 155];
-    const BLUE   = [46, 143, 212];
-    const YELLOW = [245,168,  0];
-    const GREEN  = [26, 122, 74];
-    const RED    = [176, 58, 46];
-    const ORANGE = [192, 96, 10];
-    const WHITE  = [255,255,255];
-    const BG     = [238,246,252];
-    const TEXT   = [11, 42, 74];
-    const MUTED  = [74,124,160];
-    const BORDER = [200,223,240];
-    const CARD   = [255,255,255];
-
-    /* ── HELPERS ────────────────────────────────────────── */
-    const rgb  = (c) => ({ r:c[0], g:c[1], b:c[2] });
-    const setF = (c) => pdf.setFillColor(c[0],c[1],c[2]);
-    const setT = (c) => pdf.setTextColor(c[0],c[1],c[2]);
-    const setD = (c) => pdf.setDrawColor(c[0],c[1],c[2]);
-
-    function rect(x,y,w,h,c,r=0){ setF(c); pdf.roundedRect(x,y,w,h,r,r,'F'); }
-    function rectBorder(x,y,w,h,fill,stroke,lw=0.3,r=0){
-      setF(fill); setD(stroke);
-      pdf.setLineWidth(lw);
-      pdf.roundedRect(x,y,w,h,r,r,'FD');
+function exportPDF() {
+  // Mount the report overlay if not already mounted
+  if (!window.__reportMounted) {
+    const mount = document.getElementById('report-mount');
+    if (mount) {
+      ReactDOM.createRoot(mount).render(
+        React.createElement(ReportRootWrapper)
+      );
+      window.__reportMounted = true;
     }
-    function text(str,x,y,size,color,style='normal',align='left'){
-      pdf.setFontSize(size); pdf.setFont('helvetica',style); setT(color);
-      pdf.text(String(str),x,y,{align});
-    }
-    function pct(n,d){ return d>0?Math.round(n/d*100):0; }
-
-    /* accent line at top */
-    function slideHeader(title, sub, pageNum, total){
-      // Full background
-      rect(0,0,PW,PH,BG);
-      // Navy left strip
-      rect(0,0,4,PH,NAVY);
-      // Top accent bar
-      rect(4,0,PW-4,8,NAVY);
-      // Logo area in top bar
-      text('+MARKA', 10, 5.8, 8, WHITE, 'bold');
-      text('×  BANCO FAMILIAR', 28, 5.8, 6, [180,210,235], 'normal');
-      // Right side of header
-      text('Tablero de Relevamiento · 20 al 25 de mayo 2026', PW-6, 5.8, 5.5, [180,210,235], 'normal','right');
-      // Page number pill
-      rect(PW-22, PH-8, 18, 5, NAVY, 2);
-      text(`${pageNum} / ${total}`, PW-13, PH-5, 5.5, WHITE, 'normal','center');
-      // Section title area
-      rect(4, 8, PW-4, 22, [245,250,255]);
-      setF(BORDER); pdf.setLineWidth(0.2);
-      pdf.line(4, 30, PW, 30);
-      text(title, 12, 20, 14, NAVY, 'bold');
-      if(sub) text(sub, 12, 27, 7, MUTED, 'normal');
-    }
-
-    /* KPI card */
-    function kpiCard(x,y,w,h,value,label,sub,accentColor,tone){
-      rectBorder(x,y,w,h,CARD,BORDER,0.25,3);
-      // top color bar
-      rect(x,y,w,2,accentColor,1);
-      // value
-      const valStr = String(value);
-      const valSize = valStr.length > 5 ? 22 : valStr.length > 3 ? 26 : 30;
-      text(valStr, x+w/2, y+h*0.44, valSize, TEXT, 'bold','center');
-      // label
-      text(label.toUpperCase(), x+w/2, y+h*0.65, 5.5, MUTED, 'bold','center');
-      // sub
-      if(sub) text(sub, x+w/2, y+h*0.82, 6.5, tone||accentColor, 'bold','center');
-    }
-
-    /* Horizontal bar */
-    function hBar(x,y,w,label,val,max,color,showPct=true){
-      text(label, x, y+3, 7, TEXT, 'normal');
-      const trackW = w*0.52, trackX = x+w*0.44, trackH = 4;
-      rect(trackX, y, trackW, trackH, [225,237,248], 2);
-      const fillW = Math.max(1, (val/max)*trackW);
-      rect(trackX, y, fillW, trackH, color, 2);
-      text(String(val), trackX+trackW+3, y+3.2, 7.5, TEXT, 'bold');
-      if(showPct) text(Math.round(val/max*100)+'%', trackX+trackW+14, y+3.2, 6, MUTED, 'normal');
-    }
-
-    /* Donut drawn as segments */
-    function donut(cx,cy,r,segments,thickness=6){
-      let off = -Math.PI/2;
-      const total = segments.reduce((s,sg)=>s+(sg.value||0),0)||1;
-      segments.forEach(sg=>{
-        const sweep = (sg.value/total)*2*Math.PI;
-        // approximate arc with many small lines
-        const steps = Math.max(4, Math.round(sweep*20));
-        const pts=[];
-        for(let i=0;i<=steps;i++){
-          const a=off+sweep*(i/steps);
-          pts.push([cx+Math.cos(a)*r, cy+Math.sin(a)*r]);
-        }
-        const c=sg.color||NAVY;
-        pdf.setDrawColor(c[0],c[1],c[2]);
-        pdf.setLineWidth(thickness);
-        pdf.setLineCap(0);
-        for(let i=0;i<pts.length-1;i++){
-          pdf.line(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1]);
-        }
-        off+=sweep;
-      });
-      // white center
-      rect(cx-r+thickness/2+0.5,cy-r+thickness/2+0.5,
-           (r-thickness/2)*2-1,(r-thickness/2)*2-1,CARD);
-    }
-
-    /* Rank bar list */
-    function rankBar(x,y,w,label,val,pctVal,color,idx){
-      const numW=7;
-      rect(x,y,numW,5,[230,240,250],1);
-      text(String(idx+1), x+numW/2, y+3.5, 6, NAVY,'bold','center');
-      text(label, x+numW+2, y+3.5, 7, TEXT,'normal');
-      const barX=x+w*0.52, barW=w*0.43, barH=3.5, barY=y+0.8;
-      rect(barX,barY,barW,barH,[225,237,248],1.5);
-      rect(barX,barY,Math.max(1,pctVal/100*barW),barH,color,1.5);
-      text(pctVal+'%', barX+barW+2, y+3.5, 6.5, color,'bold');
-    }
-
-    /* Insight callout */
-    function insight(x,y,w,text1,color){
-      rect(x,y,3,8,color,1);
-      rectBorder(x,y,w,10,[248,252,255],BORDER,0.2,2);
-      rect(x,y,3,10,color,1);
-      text1.split('\n').forEach((line,i)=>{
-        pdf.setFontSize(7); pdf.setFont('helvetica','normal'); setT(TEXT);
-        pdf.text(line, x+5, y+4+i*4);
-      });
-    }
-
-    /* ════════════════════════════════════════════════════════
-       SLIDE 1 — PORTADA
-    ════════════════════════════════════════════════════════ */
-    rect(0,0,PW,PH,NAVY);
-    // decorative circle
-    setF([26,80,130]); pdf.circle(PW-30,30,60,'F');
-    setF([20,70,120]); pdf.circle(40,PH+10,50,'F');
-    // yellow accent bar
-    rect(0,PH-3,PW,3,YELLOW);
-    // +MARKA logo area
-    rect(16,28,70,14,[20,70,120],3);
-    text('+MARKA', 51, 37, 18, WHITE, 'bold', 'center');
-    // title
-    text('TABLERO DE RELEVAMIENTO', 16, 62, 18, [160,200,235], 'bold');
-    text('DE MATERIALES', 16, 75, 18, [160,200,235], 'bold');
-    // subtitle
-    text('Banco Familiar · Interior del país', 16, 90, 12, YELLOW, 'bold');
-    text('Período: 20 al 25 de mayo 2026  ·  12 ciudades  ·  9 departamentos', 16, 100, 8, [130,175,210], 'normal');
-    // right stats panel
-    rect(180,40,100,130,[20,70,120],4);
-    text('LOCALES RELEVADOS', 230, 56, 7, [130,175,210], 'bold','center');
-    text(String(k.totalBF+k.tTotal), 230, 76, 38, WHITE, 'bold','center');
-    text('gastronómico + tiendas', 230, 84, 6.5, [130,175,210], 'normal','center');
-    // divider
-    setD([40,100,160]); pdf.setLineWidth(0.4); pdf.line(190,92,280,92);
-    text('GASTRONÓMICO', 200, 103, 6.5, [130,175,210], 'bold');
-    text(k.totalBF+' locales', 275, 103, 6.5, WHITE,'bold','right');
-    text('Material BF presente', 200, 112, 6.5, [130,175,210], 'normal');
-    text(k.covBF+'%', 275, 112, 6.5, YELLOW,'bold','right');
-    text('TIENDAS', 200, 125, 6.5, [130,175,210], 'bold');
-    text(k.tTotal+' locales', 275, 125, 6.5, WHITE,'bold','right');
-    text('Material BF presente', 200, 134, 6.5, [130,175,210], 'normal');
-    text(Math.round(k.tConMat/k.tTotal*100)+'%', 275, 134, 6.5, YELLOW,'bold','right');
-    // footer
-    text('Preparado por +Marka  ·  Confidencial  ·  Mayo 2026', PW/2, PH-7, 6.5, [100,150,190], 'normal','center');
-
-    /* ════════════════════════════════════════════════════════
-       SLIDE 2 — RESUMEN EJECUTIVO KPIs
-    ════════════════════════════════════════════════════════ */
-    pdf.addPage();
-    const TOTAL = 8; // will update at end
-    slideHeader('Resumen Ejecutivo', `${k.totalBF} locales gastronómicos · ${k.tTotal} tiendas · ${D.period}`, 2, TOTAL);
-
-    // EXEC BANNER box
-    rect(8,33,PW-16,38,NAVY,4);
-    setF([26,80,130]); pdf.circle(PW-20,30,30,'F');
-    text('COBERTURA DE MATERIAL BF EN', 16,46,9,WHITE,'normal');
-    text(k.covBF+'%', 100,51,22,YELLOW,'bold');
-    text('de los locales gastronómicos relevados', 118,51,9,WHITE,'normal');
-    text(`Período ${D.period} · ${k.totalBF} locales en ${k.departments} departamentos del interior.`, 16,58,7,[180,210,235],'normal');
-    text(`La competencia mantiene presencia en ${k.covCP}% de los mismos puntos.`, 16,65,7,[180,210,235],'normal');
-    // stat boxes inside banner
-    [[k.conBF,'CON MATERIAL BF',WHITE],[k.sinBF,'SIN MATERIAL',[255,220,100]]].forEach(([v,l,c],i)=>{
-      const bx=PW-65+i*30, by=37;
-      rect(bx,by,26,30,[20,70,130],3);
-      text(String(v), bx+13, by+17, 20, c,'bold','center');
-      text(l, bx+13, by+26, 5,[180,210,235],'bold','center');
-    });
-
-    // KPI cards row
-    const kpis = [
-      [k.totalBF,    'Locales gastro',  D.period,              NAVY,    MUTED],
-      [k.conBF,      'Con material BF', k.covBF+'% cobertura', GREEN,   GREEN],
-      [k.sinBF,      'Sin material BF', (100-k.covBF)+'% pendiente', RED, RED],
-      [k.knowsWell,  'Conocen la promo','de '+k.totalBF+' encargados', YELLOW, ORANGE],
-      [k.covCP+'%',  'Competencia',     k.conCP+' locales con rival',  RED, RED],
-      [k.tConMat,    'Tiendas c/ mat.', Math.round(k.tConMat/k.tTotal*100)+'% de '+k.tTotal, GREEN, GREEN],
-    ];
-    const kw=44, kh=30, ky=76, kgap=2;
-    kpis.forEach(([v,l,s,ac,tc],i)=>{
-      kpiCard(8+i*(kw+kgap), ky, kw, kh, v, l, s, ac, tc);
-    });
-
-    // Insight boxes
-    const insY = 112;
-    [
-      ['San Bernardino lidera con 71% de cobertura.\nVillarrica registra la mayor brecha: 22%.', YELLOW],
-      ['Banco Continental detectado en 11 locales gastronómicos.\nItaú presente en 50 de 86 tiendas (58%).', RED],
-      ['16 tiendas con material no visible desde vidriera.\nReubicación inmediata = +19% visibilidad sin costo.', GREEN],
-    ].forEach(([txt,c],i)=>{
-      const ix=8+i*97;
-      rectBorder(ix,insY,93,22,CARD,BORDER,0.25,3);
-      rect(ix,insY,3,22,c,1.5);
-      txt.split('\n').forEach((line,j)=>{
-        pdf.setFontSize(7.5); pdf.setFont('helvetica', j===0?'bold':'normal'); setT(j===0?TEXT:MUTED);
-        pdf.text(line,ix+6,insY+7+j*7);
-      });
-    });
-
-    /* ════════════════════════════════════════════════════════
-       SLIDE 3 — COBERTURA GEOGRÁFICA
-    ════════════════════════════════════════════════════════ */
-    pdf.addPage();
-    slideHeader('Cobertura Geográfica', 'Presencia de material BF por departamento — Gastronómico', 3, TOTAL);
-
-    // Rank list of departments
-    const deptRows = Object.entries(D.deptBF)
-      .map(([name,d])=>({ name, ...d, p: d.total?Math.round(d.con/d.total*100):0 }))
-      .sort((a,b)=>b.p-a.p);
-
-    const rankX=8, rankY=34, rankW=135, rowH=14;
-    text('RANKING POR DEPARTAMENTO', rankX, rankY-2, 8, NAVY,'bold');
-    deptRows.forEach((r,i)=>{
-      const ry=rankY+i*rowH;
-      rectBorder(rankX,ry,rankW,rowH-1,i%2===0?[248,252,255]:CARD,BORDER,0.15,2);
-      rankBar(rankX+2, ry+2, rankW-4, r.name, r.con, r.p, BLUE, i);
-      const city=D.DEPT_CITY[r.name]||'';
-      text(city, rankX+rankW-3, ry+rowH-3, 5.5, MUTED,'normal','right');
-    });
-
-    // Coverage summary stats on right
-    const covX=155, covY=34;
-    text('RESUMEN DE COBERTURA', covX, covY-2, 8, NAVY,'bold');
-
-    const covStats=[
-      [deptRows.filter(r=>r.p>=70).length+'',  'Departamentos ≥70%',GREEN],
-      [deptRows.filter(r=>r.p>0&&r.p<70).length+'','Departamentos <70%',ORANGE],
-      [deptRows.filter(r=>r.p===0).length+'',  'Sin cobertura',RED],
-      [deptRows[0]?.name||'—',                 'Mejor departamento',BLUE],
-      [deptRows[0]?.p+'%',                     'Mayor cobertura',BLUE],
-      [deptRows[deptRows.length-1]?.name||'—','Menor cobertura',RED],
-    ];
-    covStats.forEach(([v,l,c],i)=>{
-      const cy=covY+i*22, bx=covX, bw=134;
-      rectBorder(bx,cy,bw,18,CARD,BORDER,0.2,3);
-      rect(bx,cy,3,18,c,1.5);
-      text(v, bx+72, cy+7, 13, c,'bold','center');
-      text(l.toUpperCase(), bx+72, cy+14, 5.5, MUTED,'bold','center');
-    });
-
-    // City breakdown compact bars
-    const cbX=155, cbY=175;
-    text('COBERTURA POR CIUDAD', cbX, cbY-3, 7, NAVY,'bold');
-    const cityRows=D.cityBF.slice(0,6);
-    const maxCity=Math.max(...cityRows.map(c=>c.con+c.sin),1);
-    cityRows.forEach((c,i)=>{
-      const bary=cbY+i*5.8, barMaxW=100;
-      text(c.city.slice(0,14), cbX, bary+3.5, 5.5, TEXT,'normal');
-      rect(cbX+42, bary, barMaxW*c.con/maxCity, 4, BLUE, 1.5);
-      rect(cbX+42+barMaxW*c.con/maxCity, bary, barMaxW*c.sin/maxCity, 4, [200,220,235], 1.5);
-      text(c.con+'/'+( c.con+c.sin), cbX+42+barMaxW+2, bary+3.2, 5.5, TEXT,'bold');
-    });
-
-    /* ════════════════════════════════════════════════════════
-       SLIDE 4 — MATERIAL & CONOCIMIENTO
-    ════════════════════════════════════════════════════════ */
-    pdf.addPage();
-    slideHeader('Material BF — Gastronómico', 'Estado, tipo y conocimiento de la promoción', 4, TOTAL);
-
-    const col1X=8, col2X=105, col3X=202, colW=90, sY=34;
-
-    // Col 1: Presencia
-    text('PRESENCIA DE MATERIAL', col1X, sY+2, 7.5, NAVY,'bold');
-    rectBorder(col1X, sY+6, colW, 50, CARD, BORDER, 0.2, 3);
-    // big number
-    text(String(k.conBF), col1X+colW/2, sY+28, 34, NAVY,'bold','center');
-    text('locales con material BF', col1X+colW/2, sY+36, 7, MUTED,'normal','center');
-    text('de '+k.totalBF+' relevados', col1X+colW/2, sY+42, 7, TEXT,'normal','center');
-    // coverage ring visual (simple)
-    const ringCY=sY+53, ringCX=col1X+colW/2;
-    donut(ringCX,ringCY,12,[
-      {value:k.conBF, color:BLUE},
-      {value:k.sinBF, color:[210,225,240]},
-    ],5);
-    text(k.covBF+'%', ringCX, ringCY+3, 9, NAVY,'bold','center');
-    rectBorder(col1X,sY+68,colW,12,[248,252,255],BORDER,0.2,2);
-    text('Sin material: '+k.sinBF+' locales ('+( 100-k.covBF)+'%)', col1X+colW/2, sY+75.5, 7, RED,'bold','center');
-
-    // Col 2: Estado del material
-    text('ESTADO DEL MATERIAL', col2X, sY+2, 7.5, NAVY,'bold');
-    rectBorder(col2X, sY+6, colW, 74, CARD, BORDER, 0.2, 3);
-    const stateRows=[
-      ['En perfecto estado', 29, GREEN],
-      ['Sin colocar aún',     3, ORANGE],
-      ['Poco visible',        1, YELLOW],
-      ['Deteriorado',         1, RED],
-    ];
-    const maxState=Math.max(...stateRows.map(r=>r[1]));
-    stateRows.forEach(([l,v,c],i)=>{
-      const sy2=sY+14+i*16;
-      text(l, col2X+4, sy2+3.5, 7, TEXT,'normal');
-      const barW=colW-8, barH=5, barY=sy2+6;
-      rect(col2X+4, barY, barW, barH, [225,237,248],2);
-      rect(col2X+4, barY, Math.max(2,v/maxState*barW), barH, c, 2);
-      text(String(v), col2X+4+barW+2, sy2+9, 8, c,'bold');
-    });
-
-    // Col 3: Conocimiento promo
-    text('CONOCIMIENTO DE LA PROMO', col3X, sY+2, 7.5, NAVY,'bold');
-    rectBorder(col3X, sY+6, colW, 74, CARD, BORDER, 0.2, 3);
-    const knowRows=[
-      ['Conoce bien',      36, BLUE],
-      ['Parcialmente',     11, ORANGE],
-      ['No conoce',        16, RED],
-      ['Sin encargado',     8, MUTED],
-    ];
-    const knowTotal=71;
-    knowRows.forEach(([l,v,c],i)=>{
-      const ky2=sY+12+i*16;
-      const pw=v/knowTotal*(colW-8);
-      rectBorder(col3X+4, ky2, colW-8, 12, [248,252,255],BORDER,0.15,2);
-      rect(col3X+4, ky2, pw, 12, c.map?c:[c[0],c[1],c[2]], 2);
-      text(l, col3X+6, ky2+7, 6.5, TEXT,'normal');
-      text(v+' ('+Math.round(v/knowTotal*100)+'%)', col3X+colW-5, ky2+7, 6.5, TEXT,'bold','right');
-    });
-
-    // Bottom: tipo de material row
-    text('TIPO DE MATERIAL RELEVADO', col1X, sY+88, 7.5, NAVY,'bold');
-    const matRows = D.materialType.filter(m=>!m.negative).slice(0,5);
-    const maxMat = Math.max(...matRows.map(m=>m.value),1);
-    const matW = (PW-20)/matRows.length - 3;
-    matRows.forEach((m,i)=>{
-      const mx=col1X+i*(matW+3), my=sY+94, fillH=Math.max(2,m.value/maxMat*28);
-      rectBorder(mx,my,matW,36,CARD,BORDER,0.2,3);
-      rect(mx+3, my+36-fillH-4, matW-6, fillH, BLUE, 2);
-      text(String(m.value), mx+matW/2, my+36-fillH-7, 9, NAVY,'bold','center');
-      const lines=m.label.split(' ');
-      lines.forEach((ln,li)=> text(ln, mx+matW/2, my+35+li*5, 6, TEXT,'normal','center'));
-    });
-
-    /* ════════════════════════════════════════════════════════
-       SLIDE 5 — TIENDAS
-    ════════════════════════════════════════════════════════ */
-    pdf.addPage();
-    slideHeader('Relevamiento Tiendas', `${k.tTotal} locales comerciales · ${D.periodTiendas}`, 5, TOTAL);
-
-    const tKpis=[
-      [k.tTotal,         'Tiendas relevadas',      D.periodTiendas,          NAVY,  MUTED],
-      [k.tConMat,        'Con material BF',        Math.round(k.tConMat/k.tTotal*100)+'% del total', GREEN, GREEN],
-      [k.tVisible,       'Visibles vidriera',      Math.round(k.tVisible/k.tTotal*100)+'%',          BLUE,  BLUE],
-      [k.tConComp,       'Con competencia',        Math.round(k.tConComp/k.tTotal*100)+'%',          RED,   RED],
-      [k.tConoce,        'Encargado conoce',       Math.round(k.tConoce/k.tTotal*100)+'%',           YELLOW,ORANGE],
-      [k.tTotal-k.tConMat,'Sin material BF',       Math.round((k.tTotal-k.tConMat)/k.tTotal*100)+'%',RED,  RED],
-    ];
-    tKpis.forEach(([v,l,s,ac,tc],i)=>{
-      kpiCard(8+i*(kw+kgap), 34, kw, kh, v, l, s, ac, tc);
-    });
-
-    // Estado del material section
-    text('ESTADO DEL MATERIAL EN TIENDAS', col1X, 70, 7.5, NAVY,'bold');
-    const estRows=D.estadoTiendas.slice(0,5);
-    const estColors_=[GREEN,ORANGE,YELLOW,RED,MUTED];
-    const maxEst=Math.max(...estRows.map(r=>r.value),1);
-    estRows.forEach((r,i)=>{
-      hBar(col1X, 75+i*13, 140, r.label.slice(0,32), r.value, maxEst, estColors_[i]||BLUE, true);
-    });
-
-    // Bancos competidores tiendas
-    text('BANCOS COMPETIDORES EN TIENDAS', col2X+10, 70, 7.5, NAVY,'bold');
-    const tBanRows=D.tiendasBancos.slice(0,6);
-    const maxTBan=Math.max(...tBanRows.map(r=>r.value),1);
-    tBanRows.forEach((r,i)=>{
-      hBar(col2X+10, 75+i*13, 145, r.label, r.value, maxTBan, RED, true);
-    });
-
-    // Bottom insight
-    rectBorder(8,165,PW-16,22,[255,248,240],ORANGE,0.4,4);
-    rect(8,165,4,22,ORANGE,2);
-    text('OPORTUNIDAD INMEDIATA', 15, 173, 8, ORANGE,'bold');
-    text('16 tiendas tienen material colocado pero no visible desde la vidriera.', 15, 181, 8, TEXT,'normal');
-    text('Reubicar sin distribución adicional elevaría la cobertura visual de 64% a 83%.', 15, 188, 8, TEXT,'normal');
-
-    /* ════════════════════════════════════════════════════════
-       SLIDE 6 — COMPETENCIA
-    ════════════════════════════════════════════════════════ */
-    pdf.addPage();
-    slideHeader('Análisis de Competencia', 'Presencia de otros bancos en los locales gastronómicos relevados', 6, TOTAL);
-
-    // Comp KPIs
-    const compKpis=[
-      [k.conCP,           'Con mat. competencia', k.covCP+'% de locales',     RED,   RED],
-      [k.totalCP-k.conCP, 'Sin mat. competencia', (100-k.covCP)+'% zona BF',  GREEN, GREEN],
-      [D.competitors.length,'Marcas detectadas',  'entidades activas',         YELLOW,ORANGE],
-      [k.conCP-k.conCP,   'Promo activa rival',   '16 locales (23%)',          RED,   RED],
-      [12,                'Más visible que BF',   'riesgo alto',               RED,   RED],
-      [8,                 'Visibilidad similar',  'a Banco Familiar',           YELLOW,ORANGE],
-    ];
-    compKpis.forEach(([v,l,s,ac,tc],i)=>{
-      kpiCard(8+i*(kw+kgap), 34, kw, kh, v, l, s, ac, tc);
-    });
-
-    // Marcas bar chart
-    text('MARCAS IDENTIFICADAS EN LOCALES GASTRONÓMICOS', col1X, 72, 7.5, NAVY,'bold');
-    const maxComp=Math.max(...D.competitors.map(c=>c.value),1);
-    D.competitors.slice(0,8).forEach((c,i)=>{
-      hBar(col1X, 77+i*12, 145, c.label, c.value, maxComp, RED, true);
-    });
-
-    // Visibility breakdown
-    text('VISIBILIDAD DE LA COMPETENCIA VS BF', col2X+10, 72, 7.5, NAVY,'bold');
-    const visRows=[
-      {label:'Más visible que BF', value:12, color:RED},
-      {label:'Visibilidad similar', value:8, color:ORANGE},
-      {label:'Menos visible que BF',value:4, color:GREEN},
-    ];
-    const visTotal=visRows.reduce((s,r)=>s+r.value,0);
-    let vdy=78;
-    visRows.forEach(r=>{
-      const pw=(r.value/visTotal)*(colW-8);
-      rectBorder(col2X+10,vdy,colW,14,[248,252,255],BORDER,0.15,3);
-      rect(col2X+10,vdy,Math.max(3,pw),14,r.color,3);
-      text(r.label, col2X+14, vdy+8.5, 7, TEXT,'normal');
-      text(r.value+' ('+Math.round(r.value/visTotal*100)+'%)', col2X+10+colW-3, vdy+8.5, 7, TEXT,'bold','right');
-      vdy+=17;
-    });
-
-    // Tipo de promo
-    text('TIPOS DE PROMO COMPETENCIA', col3X, 72, 7.5, NAVY,'bold');
-    const promoRows=[
-      {label:'Cashback / reintegro',   value:6},
-      {label:'Promo fin de semana',     value:6},
-      {label:'Ambas (cashback + fds)',  value:2},
-      {label:'Descuento con tarjeta',   value:1},
-      {label:'Otra (reintegro TC)',     value:1},
-    ];
-    const maxPromo=Math.max(...promoRows.map(r=>r.value),1);
-    promoRows.forEach((r,i)=>{
-      hBar(col3X, 77+i*12, colW+4, r.label, r.value, maxPromo, ORANGE, false);
-    });
-
-    // Red alert box
-    rectBorder(8,162,PW-16,24,[255,245,245],RED,0.4,4);
-    rect(8,162,4,24,RED,2);
-    text('RIESGO PRIORITARIO', 15,170, 8, RED,'bold');
-    text('Banco Continental presente en 11 locales gastronómicos — 6 ciudades.', 15,178,8,TEXT,'normal');
-    text('En 12 puntos el rival supera la visibilidad de BF. Refuerzo urgente de material en esos locales.', 15,186,8,TEXT,'normal');
-
-    /* ════════════════════════════════════════════════════════
-       SLIDE 7 — ACCIONES SUGERIDAS
-    ════════════════════════════════════════════════════════ */
-    pdf.addPage();
-    slideHeader('Plan de Acción', 'Prioridades post-relevamiento · +Marka × Banco Familiar', 7, TOTAL);
-
-    const actions = [
-      { priority:'ALTA', color:RED, title:'Distribución de material pendiente',
-        body:'37 locales gastronómicos sin material BF. Priorizar Villarrica (7 pendientes) y Encarnación (11 pendientes) en el próximo ciclo de distribución.' },
-      { priority:'ALTA', color:RED, title:'Reubicación en tiendas sin visibilidad',
-        body:'16 tiendas tienen material colocado pero invisible desde vidriera. Tarea de campo puntual sin costo de nuevo material. Impacto inmediato: +19% visibilidad.' },
-      { priority:'ALTA', color:RED, title:'Refuerzo contra Continental',
-        body:'Banco Continental supera en visibilidad a BF en 12 puntos gastronómicos. Relevar y reforzar esos locales específicos como acción defensiva urgente.' },
-      { priority:'MEDIA', color:ORANGE, title:'Capacitación de encargados',
-        body:'27 encargados no conocen o conocen parcialmente la promo (38%). Implementar brief in-situ o material de apoyo en la próxima visita de campo.' },
-      { priority:'MEDIA', color:ORANGE, title:'Paridad vs Itaú en tiendas',
-        body:'Itaú tiene material en 50 de 86 tiendas (58%). Auditar los puntos donde Itaú es visible y BF no para nivelar la presencia visual.' },
-      { priority:'NORMAL', color:BLUE, title:'Seguimiento San Bernardino',
-        body:'71% de cobertura — mejor ciudad gastro. Cerrar los 2 locales faltantes para alcanzar 100%. Modelo replicable en otras ciudades.' },
-    ];
-
-    const aW=(PW-20)/3-4, aH=48;
-    actions.forEach((a,i)=>{
-      const ax=8+(i%3)*(aW+4), ay=34+(Math.floor(i/3))*(aH+6);
-      rectBorder(ax,ay,aW,aH,CARD,a.color.map?a.color:[a.color],0.5,4);
-      rect(ax,ay,aW,7,a.color,2);
-      text(a.priority, ax+4, ay+5.2, 6.5, WHITE,'bold');
-      text(a.title, ax+4, ay+14, 7.5, TEXT,'bold');
-      const bodyLines=pdf.splitTextToSize(a.body, aW-6);
-      bodyLines.slice(0,4).forEach((line,li)=>{
-        pdf.setFontSize(6.5); pdf.setFont('helvetica','normal'); setT(MUTED);
-        pdf.text(line, ax+4, ay+22+li*5.5);
-      });
-    });
-
-    // Scorecard table
-    text('SCORECARD DE INDICADORES', 8, 138, 8.5, NAVY,'bold');
-    const scRows=[
-      ['Material BF presente','Gastronómico',k.conBF,k.totalBF,k.covBF+'%','Mejorable',ORANGE],
-      ['Material BF presente','Tiendas',k.tConMat,k.tTotal,Math.round(k.tConMat/k.tTotal*100)+'%','Óptimo',GREEN],
-      ['Visible desde vidriera','Tiendas',k.tVisible,k.tTotal,Math.round(k.tVisible/k.tTotal*100)+'%','Mejorable',ORANGE],
-      ['Encargado conoce promo','Gastronómico',k.knowsWell,k.totalBF,Math.round(k.knowsWell/k.totalBF*100)+'%','Mejorable',ORANGE],
-      ['Encargado conoce promo','Tiendas',k.tConoce,k.tTotal,Math.round(k.tConoce/k.tTotal*100)+'%','Óptimo',GREEN],
-      ['Competencia con material','Gastronómico',k.conCP,k.totalCP,k.covCP+'%','Riesgo',RED],
-      ['Rival más visible que BF','Gastronómico',12,k.conCP,'50%','Crítico',RED],
-    ];
-    const scY=143, scCols=[60,48,16,14,18,24], scX=[8,68,116,132,146,164];
-    const scHdr=['Indicador','Segmento','Con','Total','%','Estado'];
-    // header
-    rect(8,scY,PW-16,7,NAVY,0);
-    scHdr.forEach((h2,i)=>{ text(h2.toUpperCase(), scX[i]+1, scY+4.8, 5.5, WHITE,'bold'); });
-    scRows.forEach((r,ri)=>{
-      const ry=scY+7+ri*8;
-      rect(8,ry,PW-16,8,ri%2===0?[248,252,255]:CARD,0);
-      setD(BORDER); pdf.setLineWidth(0.15);
-      pdf.line(8,ry+8,PW-8,ry+8);
-      [r[0],r[1],r[2],r[3],r[4]].forEach((v,i)=>{
-        text(String(v), scX[i]+1, ry+5.5, i<2?6.5:7, i<2?TEXT:NAVY, i===4?'bold':'normal');
-      });
-      rect(scX[5],ry+1.5,scCols[5]-2,5,r[6].map?r[6]:[r[6][0],r[6][1],r[6][2]].map(x=>Math.min(255,x+180)),2);
-      text(r[5], scX[5]+1, ry+5.5, 6, r[6],'bold');
-    });
-
-    /* ════════════════════════════════════════════════════════
-       SLIDE 8 — CIERRE
-    ════════════════════════════════════════════════════════ */
-    pdf.addPage();
-    rect(0,0,PW,PH,NAVY);
-    setF([26,80,130]); pdf.circle(PW-20,PH-20,70,'F');
-    setF([20,70,120]); pdf.circle(30,20,40,'F');
-    rect(0,PH-3,PW,3,YELLOW);
-    text('+MARKA', PW/2, 60, 28, WHITE,'bold','center');
-    text('× BANCO FAMILIAR', PW/2, 75, 16,[160,200,235],'normal','center');
-    text('Tablero de Relevamiento de Materiales', PW/2, 95, 10,[130,175,210],'normal','center');
-    text('Interior del País · Mayo 2026', PW/2, 106, 9,[100,150,190],'normal','center');
-    setD([40,100,160]); pdf.setLineWidth(0.5);
-    pdf.line(PW/2-40, 115, PW/2+40, 115);
-    text('Documento confidencial — preparado exclusivamente para Banco Familiar', PW/2, 128, 7,[100,150,190],'normal','center');
-    text('© 2026 +Marka  ·  Sistema de Relevamiento', PW/2, 137, 7,[100,150,190],'normal','center');
-
-    /* ── Final: correct all page headers with real total ── */
-    const realTotal = pdf.getNumberOfPages();
-    for(let p=1;p<=realTotal;p++){
-      pdf.setPage(p);
-      // Overwrite page number pill area
-      if(p>1 && p<realTotal){ // slides 2-7 have header
-        rect(PW-22, PH-8, 18, 5, NAVY, 2);
-        text(`${p} / ${realTotal}`, PW-13, PH-5, 5.5, WHITE,'normal','center');
-        // fix header page count
-        rect(PW-55, 0, 55, 8, NAVY); // cover old text
-        pdf.setFontSize(5.5); pdf.setFont('helvetica','normal'); setT([180,210,235]);
-        pdf.text(`Pág. ${p} de ${realTotal}`, PW-PAD, 5.2, {align:'right'});
-      }
-    }
-
-    const d=new Date().toLocaleDateString('es-PY').replace(/\//g,'-');
-    pdf.save(`Informe_Ejecutivo_BF_${d}.pdf`);
-
-  } catch(err){
-    console.error('PDF error:', err);
-    alert('Error al generar el PDF: '+err.message);
-  } finally {
-    if(btn){ btn.textContent='Exportar PDF'; btn.disabled=false; }
   }
+  // Show the report overlay
+  window.__showReport && window.__showReport();
 }
 window.exportPDF = exportPDF;
 
@@ -1610,5 +1217,286 @@ function App() {
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 </script>
+<div id="report-mount"></div>
+<!-- ── REPORT A4 — verbatim from design system report.jsx ── -->
+<script type="text/babel">
+/* ── Design system report.jsx (verbatim) ── */
+/* ============================================================
+   INFORME GERENCIAL (A4) — vista de exportación a PDF.
+   Se renderiza siempre en el DOM (oculto en pantalla).
+   <ReportRoot open/> lo muestra como vista previa; el botón
+   "Descargar PDF" llama window.print() y @media print imprime
+   únicamente estas hojas A4.
+   ============================================================ */
+const RD = window.TableroData;
+const RLOGO = (window.__resources && window.__resources.markaLogo) || '../../assets/masmarka-logo.png';
+
+/* ---------- helpers de gráficos (estáticos, aptos para print) ---------- */
+function RHBar({ data, color = '#2E8FD4' }) {
+  const max = Math.max(...data.map(d => d.value), 1);
+  return (
+    <div className="r-hbar">
+      {data.map((d, i) => (
+        <div className="r-hbar-row" key={i}>
+          <span className="r-hbar-lbl">{d.label}</span>
+          <div className="r-hbar-track">
+            <div className="r-hbar-fill" style={{ width: (d.value / max * 100) + '%', background: d.negative ? '#B03A2E' : color }} />
+          </div>
+          <span className="r-hbar-val" style={{ color: d.negative ? '#B03A2E' : '#0D5C9B' }}>{d.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RGroupedBar({ data }) {
+  const max = Math.max(...data.map(d => d.con + d.sin), 1);
+  return (
+    <div className="r-gbar">
+      {data.map((d, i) => (
+        <div className="r-gbar-col" key={i}>
+          <div className="r-gbar-stack">
+            <div className="r-gbar-b con" style={{ height: (d.con / max * 100) + '%' }}><span className="r-gbar-v">{d.con}</span></div>
+            <div className="r-gbar-b sin" style={{ height: (d.sin / max * 100) + '%' }}><span className="r-gbar-v">{d.sin}</span></div>
+          </div>
+          <div className="r-gbar-lbl">{d.city}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RDonut({ data, size = 150 }) {
+  const total = data.reduce((s, x) => s + x.value, 0) || 1;
+  const r = (size - 18) / 2, cx = size / 2, cy = size / 2, circ = 2 * Math.PI * r;
+  let off = 0;
+  return (
+    <div className="r-donut">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        {data.map((s, i) => {
+          const frac = s.value / total, dash = frac * circ;
+          const el = <circle key={i} cx={cx} cy={cy} r={r} fill="none" stroke={s.color} strokeWidth="18"
+            strokeDasharray={`${dash.toFixed(2)} ${(circ - dash).toFixed(2)}`} strokeDashoffset={(-off * circ).toFixed(2)}
+            transform={`rotate(-90 ${cx} ${cy})`} />;
+          off += frac; return el;
+        })}
+        <text x={cx} y={cy + 5} textAnchor="middle" fontFamily="Inter" fontSize="19" fontWeight="700" fill="#0B2A4A">{total}</text>
+      </svg>
+      <div className="r-dl">
+        {data.map((s, i) => (
+          <div className="r-dl-row" key={i}><span className="r-dl-dot" style={{ background: s.color }} /><span className="r-dl-lab">{s.label}</span><b>{s.value}</b><span className="r-dl-pct">{Math.round(s.value / total * 100)}%</span></div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function RRank({ data, deptCity }) {
+  const rows = Object.entries(data).map(([name, d]) => ({ name, ...d, pct: d.total ? Math.round(d.con / d.total * 100) : 0 })).sort((a, b) => b.pct - a.pct);
+  return (
+    <div className="r-rank">
+      {rows.map((r, i) => (
+        <div className="r-rank-row" key={r.name}>
+          <span className="r-rank-i">{i + 1}</span>
+          <div className="r-rank-main">
+            <div className="r-rank-top"><span className="r-rank-name">{r.name}</span><span className="r-rank-pct" style={{ color: '#1D4ED8' }}>{r.pct}%</span></div>
+            <div className="r-rank-track"><div className="r-rank-fill" style={{ width: r.pct + '%', background: '#1D4ED8' }} /></div>
+            <div className="r-rank-sub">{r.con}/{r.total} locales · {deptCity[r.name]}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ---------- envoltorio de página ---------- */
+function RPage({ title, num, total, children }) {
+  return (
+    <div className="a4">
+      <div className="a4-head">
+        <div><div className="a4-eyebrow">Informe de Relevamiento</div><div className="a4-title">{title}</div></div>
+        <img className="a4-logo" src={RLOGO} alt="+Marka" />
+      </div>
+      <div className="a4-rule" />
+      <div className="a4-body">{children}</div>
+      <div className="a4-foot"><span>+Marka · Banco Familiar — Relevamiento {RD.period}</span><span>Página {num} de {total}</span></div>
+    </div>
+  );
+}
+
+/* ---------- documento completo ---------- */
+function ReportDocument() {
+  const k = RD.kpi;
+  const today = new Date().toLocaleDateString('es-PY', { day: '2-digit', month: 'long', year: 'numeric' });
+  const TOTAL = 5;
+
+  /* --- todo computado desde RD para coincidir con el tablero --- */
+  const bfRows = Object.entries(RD.deptBF).map(([name, d]) => ({ name, ...d, pct: d.total ? Math.round(d.con / d.total * 100) : 0 }));
+  const byPct = [...bfRows].sort((a, b) => b.pct - a.pct);            // como ordena el ranking del tablero
+  const byVol = [...bfRows].sort((a, b) => b.con - a.con);
+  const lowCov = [...bfRows].sort((a, b) => a.pct - b.pct).slice(0, 3);
+  const topCov = byPct.slice(0, 2);
+  const topVol = byVol.slice(0, 2);
+  const comp = [...RD.competitors].sort((a, b) => b.value - a.value);
+  const sVal = (arr, lbl) => (arr.find(x => x.label === lbl) || { value: 0 }).value;
+  const knowsWell = sVal(RD.promoKnowledge, 'Conoce bien');
+  const perfect = sVal(RD.materialState, 'Perfecto');
+  const deterior = sVal(RD.materialState, 'Deteriorado');
+
+  const findings = [
+    <>Cobertura propia del <b>{k.covBF}%</b> en gastronomía: {k.conBF} de {k.totalBF} locales exhiben material de Banco Familiar.</>,
+    <>Mayor volumen de presencia en <b>{topVol[0].name}</b> ({topVol[0].con} locales) y {topVol[1].name} ({topVol[1].con}); la cobertura relativa más alta se da en {topCov[0].name} ({topCov[0].pct}%) y {topCov[1].name} ({topCov[1].pct}%).</>,
+    <><b>{k.sinBF} locales sin material</b>: la menor cobertura se observa en {lowCov[0].name} ({lowCov[0].pct}%), {lowCov[1].name} ({lowCov[1].pct}%) y {lowCov[2].name} ({lowCov[2].pct}%) — foco de reposición.</>,
+    <>La competencia está presente en el <b>{k.covCP}%</b> de los mismos puntos; lidera {comp[0].label} ({comp[0].value} detecciones), seguido de {comp[1].label} ({comp[1].value}).</>,
+    <>Conocimiento de la promoción: <b>{knowsWell} encargados</b> la conocen bien. El material está en perfecto estado en {perfect} locales; {deterior} deteriorados requieren recambio.</>,
+  ];
+
+  const recos = [
+    <><b>Reposición prioritaria</b> en los {k.sinBF} locales sin material, focalizando {lowCov[0].name}, {lowCov[1].name} y {lowCov[2].name} (menor cobertura).</>,
+    <><b>Recambio</b> de los {deterior} materiales deteriorados y reubicación de los mal ubicados antes del cierre de campaña.</>,
+    <><b>Refuerzo de capacitación</b> a encargados sobre la promoción vigente, especialmente donde la competencia muestra mayor visibilidad.</>,
+    <><b>Monitoreo de competencia</b> en los puntos donde {comp[0].label} y {comp[1].label} concentran su presencia.</>,
+    <><b>Próximo relevamiento</b> sugerido en 30 días para medir el impacto de las acciones de reposición.</>,
+  ];
+
+  return (
+    <div className="report-pages">
+
+      {/* ---- PORTADA ---- */}
+      <div className="a4 cover">
+        <div className="cover-inner">
+          <img className="cover-logo" src={RLOGO} alt="+Marka" />
+          <div className="cover-eyebrow">Informe Gerencial</div>
+          <div className="cover-title">Relevamiento de Materiales Publicitarios</div>
+          <div className="cover-sub">Resultados consolidados del trabajo de campo</div>
+          <div className="cover-meta">
+            <div><div className="cm-k">Cliente</div><div className="cm-v">Banco Familiar</div></div>
+            <div><div className="cm-k">Período</div><div className="cm-v">{RD.period}</div></div>
+            <div><div className="cm-k">Locales</div><div className="cm-v">{k.totalBF} relevados</div></div>
+          </div>
+          <div className="cover-foot">Elaborado por +Marka · Generado el {today}.<br />Documento de uso interno — confidencial.</div>
+        </div>
+      </div>
+
+      {/* ---- P1 · RESUMEN EJECUTIVO ---- */}
+      <RPage title="Resumen Ejecutivo" num={1} total={TOTAL}>
+        <p className="r-lead">Durante el período <b>{RD.period}</b> se relevaron <b>{k.totalBF} locales gastronómicos</b> en {k.departments} departamentos. La cobertura de material de Banco Familiar alcanza el <b>{k.covBF}%</b>, mientras la competencia se hace presente en el <b>{k.covCP}%</b> de los mismos puntos.</p>
+        <div className="r-kpis">
+          <div className="r-kpi b"><div className="k-l">Relevados</div><div className="k-v">{k.totalBF}</div><div className="k-s mut">total</div></div>
+          <div className="r-kpi g"><div className="k-l">Con material</div><div className="k-v">{k.conBF}</div><div className="k-s pos">{k.covBF}%</div></div>
+          <div className="r-kpi r"><div className="k-l">Sin material</div><div className="k-v">{k.sinBF}</div><div className="k-s neg">{100 - k.covBF}%</div></div>
+          <div className="r-kpi y"><div className="k-l">Conocen promo</div><div className="k-v">{k.knowsWell}</div><div className="k-s mid">encargados</div></div>
+          <div className="r-kpi b"><div className="k-l">Competencia</div><div className="k-v">{k.covCP}%</div><div className="k-s neg">{k.conCP} locales</div></div>
+        </div>
+        <div className="r-seclbl mt">Hallazgos clave</div>
+        <div className="r-find">
+          {findings.map((f, i) => <div className="r-find-row" key={i}><span className="fi">{i + 1}</span><span>{f}</span></div>)}
+        </div>
+      </RPage>
+
+      {/* ---- P2 · COBERTURA GEOGRÁFICA ---- */}
+      <RPage title="Cobertura Geográfica" num={2} total={TOTAL}>
+        <div className="r-panel">
+          <div className="r-panel-h">Ranking por departamento — material BF</div>
+          <div className="r-panel-b"><RRank data={RD.deptBF} deptCity={RD.DEPT_CITY} /></div>
+        </div>
+        <div className="r-panel" style={{ marginTop: '7mm' }}>
+          <div className="r-panel-h">Locales por ciudad — con vs sin material</div>
+          <div className="r-panel-b">
+            <div className="r-leg"><span className="r-leg-chip"><span className="r-leg-dot" style={{ background: '#1D4ED8' }} />Con material</span><span className="r-leg-chip"><span className="r-leg-dot" style={{ background: '#CBD5E1' }} />Sin material</span></div>
+            <RGroupedBar data={RD.cityBF} />
+          </div>
+        </div>
+      </RPage>
+
+      {/* ---- P3 · MATERIAL Y PROMOCIÓN ---- */}
+      <RPage title="Material y Promoción" num={3} total={TOTAL}>
+        <div className="r-2col">
+          <div className="r-panel">
+            <div className="r-panel-h">Tipo de material relevado</div>
+            <div className="r-panel-b"><RHBar data={RD.materialType} color="#2E8FD4" /></div>
+          </div>
+          <div className="r-panel">
+            <div className="r-panel-h">Estado del material</div>
+            <div className="r-panel-b"><RDonut data={RD.materialState} /></div>
+          </div>
+        </div>
+        <div className="r-seclbl mt">Conocimiento de la promoción</div>
+        <div className="r-panel">
+          <div className="r-panel-b"><RDonut data={RD.promoKnowledge} /></div>
+        </div>
+      </RPage>
+
+      {/* ---- P4 · COMPETENCIA ---- */}
+      <RPage title="Análisis de Competencia" num={4} total={TOTAL}>
+        <div className="r-2col">
+          <div className="r-panel">
+            <div className="r-panel-h">Marcas competidoras detectadas</div>
+            <div className="r-panel-b"><RHBar data={RD.competitors} color="#B03A2E" /></div>
+          </div>
+          <div className="r-panel">
+            <div className="r-panel-h">Visibilidad vs Banco Familiar</div>
+            <div className="r-panel-b"><RDonut data={RD.visibilityVsBF} /></div>
+          </div>
+        </div>
+        <div className="r-seclbl mt">Ranking competencia por departamento</div>
+        <div className="r-panel">
+          <div className="r-panel-b"><RRank data={RD.deptCP} deptCity={RD.DEPT_CITY} /></div>
+        </div>
+      </RPage>
+
+      {/* ---- P5 · CONCLUSIONES ---- */}
+      <RPage title="Conclusiones y Recomendaciones" num={5} total={TOTAL}>
+        <p className="r-lead">El relevamiento confirma una <b>posición sólida</b> de Banco Familiar en los principales centros urbanos, con oportunidades concretas de mejora en cobertura, estado del material y capacitación de encargados.</p>
+        <div className="r-reco">
+          <div className="r-reco-h">Acciones recomendadas</div>
+          <ol>
+            {recos.map((r, i) => <li key={i}>{r}</li>)}
+          </ol>
+        </div>
+        <div className="r-seclbl mt">Resumen de cobertura</div>
+        <div className="r-2col">
+          <div className="r-panel"><div className="r-panel-h">Banco Familiar</div><div className="r-panel-b"><div className="r-donut"><RDonut data={[{ label: 'Con material', value: k.conBF, color: '#1D4ED8' }, { label: 'Sin material', value: k.sinBF, color: '#CBD5E1' }]} /></div></div></div>
+          <div className="r-panel"><div className="r-panel-h">Competencia</div><div className="r-panel-b"><div className="r-donut"><RDonut data={[{ label: 'Con material', value: k.conCP, color: '#B03A2E' }, { label: 'Sin material', value: k.totalCP - k.conCP, color: '#CBD5E1' }]} /></div></div></div>
+        </div>
+      </RPage>
+
+    </div>
+  );
+}
+
+/* ---------- raíz / overlay de vista previa ---------- */
+function ReportRoot({ open, onClose }) {
+  return (
+    <div className={'report-root' + (open ? ' open' : '')}>
+      <div className="report-bar">
+        <div>
+          <div className="rb-title">Vista previa — Informe gerencial</div>
+          <div className="rb-sub">Formato A4 · 6 páginas · listo para guardar como PDF</div>
+        </div>
+        <div className="rb-spacer" />
+        <button className="rb-close" onClick={onClose}>Cerrar</button>
+        <button className="rb-print" onClick={() => window.print()}>Descargar PDF</button>
+      </div>
+      <ReportDocument />
+    </div>
+  );
+}
+
+Object.assign(window, { ReportRoot, ReportDocument });
+
+
+/* ── Wrapper component that manages open/close state ── */
+function ReportRootWrapper() {
+  const [open, setOpen] = React.useState(false);
+  // Expose show function globally
+  React.useEffect(() => {
+    window.__showReport = () => setOpen(true);
+  }, []);
+  return React.createElement(ReportRoot, { open, onClose: () => setOpen(false) });
+}
+window.ReportRootWrapper = ReportRootWrapper;
+</script>
+
 </body>
 </html>
