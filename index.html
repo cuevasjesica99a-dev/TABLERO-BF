@@ -376,82 +376,151 @@ async function exportPDF() {
 
   try {
     const { jsPDF } = window.jspdf;
-    const content   = document.querySelector('.pages');
-    if (!content) throw new Error('No se encontró el contenido');
 
-    // Temporarily expand for full capture
-    const origOverflow = content.style.overflow;
-    content.style.overflow = 'visible';
+    // ── A4 dimensions (landscape for wider dashboard) ──────
+    const A4_W_MM  = 297;   // landscape width
+    const A4_H_MM  = 210;   // landscape height
+    const HDR_MM   = 8;     // top header strip
+    const PAD_MM   = 6;     // side + bottom padding
+    const CONTENT_W_MM = A4_W_MM - PAD_MM * 2;
+    const CONTENT_H_MM = A4_H_MM - HDR_MM - PAD_MM;
 
-    const canvas = await html2canvas(content, {
-      scale: 1.8,
-      useCORS: true,
-      allowTaint: false,
-      backgroundColor: '#EEF6FC',
-      logging: false,
-      windowWidth: 1280,
-    });
-
-    content.style.overflow = origOverflow;
-
-    const imgW  = 210;           // A4 width mm
-    const imgH  = (canvas.height * imgW) / canvas.width;
-    const pdf   = new jsPDF({ orientation: imgH > 297 ? 'p' : 'p', unit: 'mm', format: 'a4' });
-
-    // Page title metadata
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
     pdf.setProperties({
       title:   'Tablero de Relevamiento — Banco Familiar',
-      subject: 'Relevamiento de materiales publicitarios',
+      subject: 'Relevamiento de materiales · +Marka',
       author:  '+Marka',
       creator: '+Marka Dashboard',
     });
 
-    // If content taller than one A4 page, split into multiple pages
-    const pageH = 297;
-    const pxPerMm = canvas.width / imgW;
-    const pageHpx = pageH * pxPerMm;
-    let yOffset = 0;
-    let pageNum = 0;
+    // ── Identify all visible section cards to render one per page ──
+    // We render the exec banner + KPIs as page 1,
+    // then each card row as subsequent pages — fitting everything to A4.
+    // Strategy: capture each logical block at CONTENT_W_MM equivalent px,
+    // scale to fit, add to a new page.
 
-    while (yOffset < canvas.height) {
-      if (pageNum > 0) pdf.addPage();
-      const remaining = canvas.height - yOffset;
-      const sliceH    = Math.min(pageHpx, remaining);
+    const SCALE      = 2.5;   // capture resolution multiplier
+    const PX_PER_MM  = SCALE * (window.devicePixelRatio || 1);
+    const captureW   = Math.round(CONTENT_W_MM * PX_PER_MM);
 
-      // Draw slice of canvas onto a temp canvas
-      const tmp = document.createElement('canvas');
-      tmp.width  = canvas.width;
-      tmp.height = sliceH;
-      const ctx = tmp.getContext('2d');
-      ctx.drawImage(canvas, 0, -yOffset);
+    const content = document.querySelector('.pages');
+    if (!content) throw new Error('No se encontró .pages');
 
-      const imgData = tmp.toDataURL('image/jpeg', 0.92);
-      const sliceHmm = (sliceH / canvas.width) * imgW;
-      pdf.addImage(imgData, 'JPEG', 0, 0, imgW, sliceHmm);
+    // Collect all direct children of .page div (each logical block)
+    const pageDiv = content.querySelector('.page');
+    if (!pageDiv) throw new Error('No se encontró .page');
+    const blocks = Array.from(pageDiv.children);
 
-      yOffset += pageHpx;
-      pageNum++;
-    }
+    let firstPage = true;
 
-    // Header strip on every page with branding
-    for (let p = 1; p <= pdf.getNumberOfPages(); p++) {
-      pdf.setPage(p);
+    for (const block of blocks) {
+      // Skip invisible / decorative elements
+      const rect = block.getBoundingClientRect();
+      if (rect.height < 4) continue;
+
+      // Temporarily force block to render at full width matching captureW
+      const origWidth    = block.style.width;
+      const origMaxWidth = block.style.maxWidth;
+      const origPos      = block.style.position;
+
+      // Capture this block
+      const canvas = await html2canvas(block, {
+        scale: SCALE,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: '#EEF6FC',
+        logging: false,
+        width: block.scrollWidth,
+        height: block.scrollHeight,
+        windowWidth: 1280,
+      });
+
+      block.style.width    = origWidth;
+      block.style.maxWidth = origMaxWidth;
+      block.style.position = origPos;
+
+      if (canvas.width < 4 || canvas.height < 4) continue;
+
+      // Scale canvas to fit CONTENT area of the A4 page
+      const scaleToFitW = CONTENT_W_MM / (canvas.width / PX_PER_MM);
+      const renderedH_mm = (canvas.height / PX_PER_MM) * scaleToFitW;
+
+      if (!firstPage) pdf.addPage();
+      firstPage = false;
+
+      // ── Draw navy header strip ──────────────────────────
       pdf.setFillColor(13, 92, 155);
-      pdf.rect(0, 0, 210, 7, 'F');
+      pdf.rect(0, 0, A4_W_MM, HDR_MM, 'F');
       pdf.setTextColor(255, 255, 255);
       pdf.setFontSize(7);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('+MARKA · Tablero de Relevamiento · Banco Familiar', 5, 4.8);
+      pdf.text('+MARKA  ·  Tablero de Relevamiento  ·  Banco Familiar', PAD_MM, 5.5);
       pdf.setFont('helvetica', 'normal');
-      pdf.text(`Pág. ${p} de ${pdf.getNumberOfPages()}`, 200, 4.8, { align: 'right' });
+      const today = new Date().toLocaleDateString('es-PY');
+      pdf.text(`20 al 25 de mayo 2026  ·  ${today}`, A4_W_MM - PAD_MM, 5.5, { align: 'right' });
+
+      // ── If block fits in one page, center vertically ────
+      if (renderedH_mm <= CONTENT_H_MM) {
+        const yCenter = HDR_MM + (CONTENT_H_MM - renderedH_mm) / 2;
+        pdf.addImage(
+          canvas.toDataURL('image/jpeg', 0.93),
+          'JPEG',
+          PAD_MM,
+          yCenter,
+          CONTENT_W_MM,
+          renderedH_mm
+        );
+      } else {
+        // Block taller than one page → slice it across pages
+        const pxPerPage  = (CONTENT_H_MM / scaleToFitW) * PX_PER_MM;
+        let yPx = 0;
+        let slicePage = 0;
+        while (yPx < canvas.height) {
+          if (slicePage > 0) {
+            pdf.addPage();
+            // repeat header
+            pdf.setFillColor(13, 92, 155);
+            pdf.rect(0, 0, A4_W_MM, HDR_MM, 'F');
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('+MARKA  ·  Tablero de Relevamiento  ·  Banco Familiar', PAD_MM, 5.5);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text(`20 al 25 de mayo 2026  ·  ${today}`, A4_W_MM - PAD_MM, 5.5, { align: 'right' });
+          }
+          const sliceHpx = Math.min(pxPerPage, canvas.height - yPx);
+          const tmp = document.createElement('canvas');
+          tmp.width  = canvas.width;
+          tmp.height = Math.ceil(sliceHpx);
+          tmp.getContext('2d').drawImage(canvas, 0, -yPx);
+          const sliceHmm = (sliceHpx / PX_PER_MM) * scaleToFitW;
+          pdf.addImage(tmp.toDataURL('image/jpeg', 0.93), 'JPEG', PAD_MM, HDR_MM + PAD_MM, CONTENT_W_MM, sliceHmm);
+          yPx += pxPerPage;
+          slicePage++;
+        }
+      }
     }
 
-    const today = new Date().toLocaleDateString('es-PY').replace(/\//g,'-');
-    pdf.save(`Tablero_BF_${today}.pdf`);
+    // ── Page numbers ────────────────────────────────────────
+    const total = pdf.getNumberOfPages();
+    for (let p = 1; p <= total; p++) {
+      pdf.setPage(p);
+      pdf.setTextColor(100, 130, 160);
+      pdf.setFontSize(7);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(
+        `${p} / ${total}`,
+        A4_W_MM / 2, A4_H_MM - 2,
+        { align: 'center' }
+      );
+    }
+
+    const todayFile = new Date().toLocaleDateString('es-PY').replace(/\//g,'-');
+    pdf.save(`Tablero_BF_${todayFile}.pdf`);
 
   } catch (err) {
     console.error('Error exportando PDF:', err);
-    alert('No se pudo generar el PDF. Intentá nuevamente.');
+    alert('No se pudo generar el PDF: ' + err.message);
   } finally {
     if (btn) { btn.textContent = 'Exportar PDF'; btn.disabled = false; }
   }
