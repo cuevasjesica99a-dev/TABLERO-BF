@@ -1340,7 +1340,7 @@ function ReportDocument() {
   const comp = [...RD.competitors].sort((a, b) => b.value - a.value);
   const sVal = (arr, lbl) => (arr.find(x => x.label === lbl) || { value: 0 }).value;
   const knowsWell = sVal(RD.promoKnowledge, 'Conoce bien');
-  const perfect = sVal(RD.materialState, 'Perfecto');
+  const perfect = sVal(RD.materialState, 'En perfecto estado');
   const deterior = sVal(RD.materialState, 'Deteriorado');
 
   const findings = [
