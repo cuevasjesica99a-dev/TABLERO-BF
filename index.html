@@ -377,150 +377,167 @@ async function exportPDF() {
   try {
     const { jsPDF } = window.jspdf;
 
-    // ── A4 dimensions (landscape for wider dashboard) ──────
-    const A4_W_MM  = 297;   // landscape width
-    const A4_H_MM  = 210;   // landscape height
-    const HDR_MM   = 8;     // top header strip
-    const PAD_MM   = 6;     // side + bottom padding
-    const CONTENT_W_MM = A4_W_MM - PAD_MM * 2;
-    const CONTENT_H_MM = A4_H_MM - HDR_MM - PAD_MM;
+    // A4 landscape in mm
+    const PW = 297, PH = 210;
+    // Header strip height and side padding
+    const HDR = 8, PAD = 5;
+    // Usable content area per page
+    const CW = PW - PAD * 2;   // 287mm
+    const CH = PH - HDR - PAD; // 197mm
 
     const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
     pdf.setProperties({
-      title:   'Tablero de Relevamiento — Banco Familiar',
-      subject: 'Relevamiento de materiales · +Marka',
-      author:  '+Marka',
-      creator: '+Marka Dashboard',
+      title: 'Tablero de Relevamiento — Banco Familiar',
+      author: '+Marka', creator: '+Marka Dashboard',
     });
 
-    // ── Identify all visible section cards to render one per page ──
-    // We render the exec banner + KPIs as page 1,
-    // then each card row as subsequent pages — fitting everything to A4.
-    // Strategy: capture each logical block at CONTENT_W_MM equivalent px,
-    // scale to fit, add to a new page.
+    // ── helper: draw page header ──────────────────────────
+    function drawHeader(p, total) {
+      pdf.setPage(p);
+      pdf.setFillColor(13, 92, 155);
+      pdf.rect(0, 0, PW, HDR, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(6.5);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('+MARKA  ·  Tablero de Relevamiento  ·  Banco Familiar', PAD, 5.2);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Pág. ${p} de ${total}`, PW - PAD, 5.2, { align: 'right' });
+    }
 
-    const SCALE      = 2.5;   // capture resolution multiplier
-    const PX_PER_MM  = SCALE * (window.devicePixelRatio || 1);
-    const captureW   = Math.round(CONTENT_W_MM * PX_PER_MM);
+    // ── Capture a DOM element scaled to fit CW×CH exactly ─
+    // captureScale: how many px per mm when rendering
+    const DPR   = window.devicePixelRatio || 1;
+    const CSCALE = 2.5;                      // render quality multiplier
+    const PPM   = CSCALE * DPR;             // px per mm
 
-    const content = document.querySelector('.pages');
-    if (!content) throw new Error('No se encontró .pages');
+    async function captureElement(el) {
+      // Force element to be exactly CW mm wide before capture
+      const targetPx = Math.round(CW * PPM);
+      const saved = { width: el.style.width, minWidth: el.style.minWidth, maxWidth: el.style.maxWidth };
+      el.style.width    = targetPx + 'px';
+      el.style.minWidth = targetPx + 'px';
+      el.style.maxWidth = targetPx + 'px';
 
-    // Collect all direct children of .page div (each logical block)
-    const pageDiv = content.querySelector('.page');
-    if (!pageDiv) throw new Error('No se encontró .page');
-    const blocks = Array.from(pageDiv.children);
-
-    let firstPage = true;
-
-    for (const block of blocks) {
-      // Skip invisible / decorative elements
-      const rect = block.getBoundingClientRect();
-      if (rect.height < 4) continue;
-
-      // Temporarily force block to render at full width matching captureW
-      const origWidth    = block.style.width;
-      const origMaxWidth = block.style.maxWidth;
-      const origPos      = block.style.position;
-
-      // Capture this block
-      const canvas = await html2canvas(block, {
-        scale: SCALE,
+      const c = await html2canvas(el, {
+        scale: CSCALE,
         useCORS: true,
         allowTaint: false,
         backgroundColor: '#EEF6FC',
         logging: false,
-        width: block.scrollWidth,
-        height: block.scrollHeight,
-        windowWidth: 1280,
+        width:  el.scrollWidth,
+        height: el.scrollHeight,
       });
 
-      block.style.width    = origWidth;
-      block.style.maxWidth = origMaxWidth;
-      block.style.position = origPos;
+      el.style.width    = saved.width;
+      el.style.minWidth = saved.minWidth;
+      el.style.maxWidth = saved.maxWidth;
+      return c;
+    }
 
+    // ── Collect blocks from current active page ───────────
+    const pageDiv = document.querySelector('.pages .page');
+    if (!pageDiv) throw new Error('No se encontró .page');
+    const blocks = Array.from(pageDiv.children).filter(b => b.getBoundingClientRect().height > 8);
+
+    // ── Group small blocks together so they share a page ──
+    // Strategy: greedily pack consecutive blocks onto a page
+    // until adding the next would overflow CH.
+    // Each block's height in mm = (canvasH / PPM) * (CW / (canvasW / PPM))
+    //                           = canvasH * CW / canvasW
+
+    // First pass: capture all blocks and compute their natural heights
+    const captured = [];
+    for (const block of blocks) {
+      const canvas = await captureElement(block);
       if (canvas.width < 4 || canvas.height < 4) continue;
+      // height in mm when scaled to CW wide
+      const hMM = (canvas.height / canvas.width) * CW;
+      captured.push({ canvas, hMM });
+    }
 
-      // Scale canvas to fit CONTENT area of the A4 page
-      const scaleToFitW = CONTENT_W_MM / (canvas.width / PX_PER_MM);
-      const renderedH_mm = (canvas.height / PX_PER_MM) * scaleToFitW;
+    // Second pass: group into pages so each page fills as much as possible
+    // with items scaled to fit exactly within CH
+    const pages = [];  // each item = array of {canvas, hMM}
+    let currentPage = [], usedMM = 0;
+    const GAP = 3; // mm gap between blocks on same page
 
-      if (!firstPage) pdf.addPage();
-      firstPage = false;
+    for (const item of captured) {
+      const needed = usedMM === 0 ? item.hMM : item.hMM + GAP;
 
-      // ── Draw navy header strip ──────────────────────────
-      pdf.setFillColor(13, 92, 155);
-      pdf.rect(0, 0, A4_W_MM, HDR_MM, 'F');
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(7);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('+MARKA  ·  Tablero de Relevamiento  ·  Banco Familiar', PAD_MM, 5.5);
-      pdf.setFont('helvetica', 'normal');
-      const today = new Date().toLocaleDateString('es-PY');
-      pdf.text(`20 al 25 de mayo 2026  ·  ${today}`, A4_W_MM - PAD_MM, 5.5, { align: 'right' });
-
-      // ── If block fits in one page, center vertically ────
-      if (renderedH_mm <= CONTENT_H_MM) {
-        const yCenter = HDR_MM + (CONTENT_H_MM - renderedH_mm) / 2;
-        pdf.addImage(
-          canvas.toDataURL('image/jpeg', 0.93),
-          'JPEG',
-          PAD_MM,
-          yCenter,
-          CONTENT_W_MM,
-          renderedH_mm
-        );
+      if (usedMM + needed <= CH) {
+        currentPage.push(item);
+        usedMM += needed;
+      } else if (item.hMM > CH) {
+        // Block taller than full page → slice it across pages
+        if (currentPage.length > 0) { pages.push(currentPage); currentPage = []; usedMM = 0; }
+        pages.push([{ canvas: item.canvas, hMM: item.hMM, tall: true }]);
       } else {
-        // Block taller than one page → slice it across pages
-        const pxPerPage  = (CONTENT_H_MM / scaleToFitW) * PX_PER_MM;
-        let yPx = 0;
-        let slicePage = 0;
+        // Doesn't fit → flush current page and start new one
+        if (currentPage.length > 0) pages.push(currentPage);
+        currentPage = [item];
+        usedMM = item.hMM;
+      }
+    }
+    if (currentPage.length > 0) pages.push(currentPage);
+
+    // Third pass: render each page group
+    for (let pi = 0; pi < pages.length; pi++) {
+      if (pi > 0) pdf.addPage();
+      const group = pages[pi];
+
+      if (group.length === 1 && group[0].tall) {
+        // Tall block: slice across multiple pages
+        const { canvas } = group[0];
+        const pxPerPage = Math.round(CH * (canvas.width / CW));
+        let yPx = 0, sliceNum = 0;
         while (yPx < canvas.height) {
-          if (slicePage > 0) {
-            pdf.addPage();
-            // repeat header
-            pdf.setFillColor(13, 92, 155);
-            pdf.rect(0, 0, A4_W_MM, HDR_MM, 'F');
-            pdf.setTextColor(255, 255, 255);
-            pdf.setFontSize(7);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text('+MARKA  ·  Tablero de Relevamiento  ·  Banco Familiar', PAD_MM, 5.5);
-            pdf.setFont('helvetica', 'normal');
-            pdf.text(`20 al 25 de mayo 2026  ·  ${today}`, A4_W_MM - PAD_MM, 5.5, { align: 'right' });
-          }
-          const sliceHpx = Math.min(pxPerPage, canvas.height - yPx);
+          if (sliceNum > 0) { pdf.addPage(); }
+          const slicePx = Math.min(pxPerPage, canvas.height - yPx);
           const tmp = document.createElement('canvas');
-          tmp.width  = canvas.width;
-          tmp.height = Math.ceil(sliceHpx);
+          tmp.width = canvas.width; tmp.height = Math.ceil(slicePx);
           tmp.getContext('2d').drawImage(canvas, 0, -yPx);
-          const sliceHmm = (sliceHpx / PX_PER_MM) * scaleToFitW;
-          pdf.addImage(tmp.toDataURL('image/jpeg', 0.93), 'JPEG', PAD_MM, HDR_MM + PAD_MM, CONTENT_W_MM, sliceHmm);
-          yPx += pxPerPage;
-          slicePage++;
+          const sliceHmm = (slicePx / canvas.width) * CW;
+          pdf.addImage(tmp.toDataURL('image/jpeg', 0.93), 'JPEG', PAD, HDR + PAD, CW, sliceHmm);
+          yPx += pxPerPage; sliceNum++;
+        }
+      } else {
+        // Normal group: stack items and scale so total fills the page height
+        const totalNatural = group.reduce((s, it, i) => s + it.hMM + (i > 0 ? GAP : 0), 0);
+        // Scale factor so the group fills CH exactly (but never upscale beyond 1:1)
+        const scaleFactor = Math.min(1, CH / totalNatural);
+        const groupW = CW * scaleFactor;
+        // Center horizontally if scaled down
+        const xOff = PAD + (CW - groupW) / 2;
+
+        let yMM = HDR + PAD;
+        for (let gi = 0; gi < group.length; gi++) {
+          const { canvas, hMM } = group[gi];
+          if (gi > 0) yMM += GAP * scaleFactor;
+          const drawW = groupW;
+          const drawH = hMM * scaleFactor;
+          pdf.addImage(canvas.toDataURL('image/jpeg', 0.93), 'JPEG', xOff, yMM, drawW, drawH);
+          yMM += drawH;
         }
       }
     }
 
-    // ── Page numbers ────────────────────────────────────────
-    const total = pdf.getNumberOfPages();
-    for (let p = 1; p <= total; p++) {
+    // Draw headers + page numbers on all pages
+    const totalPages = pdf.getNumberOfPages();
+    for (let p = 1; p <= totalPages; p++) {
+      drawHeader(p, totalPages);
       pdf.setPage(p);
-      pdf.setTextColor(100, 130, 160);
-      pdf.setFontSize(7);
+      pdf.setTextColor(150, 170, 190);
+      pdf.setFontSize(6);
       pdf.setFont('helvetica', 'normal');
-      pdf.text(
-        `${p} / ${total}`,
-        A4_W_MM / 2, A4_H_MM - 2,
-        { align: 'center' }
-      );
+      pdf.text(`${p} / ${totalPages}`, PW / 2, PH - 2, { align: 'center' });
     }
 
-    const todayFile = new Date().toLocaleDateString('es-PY').replace(/\//g,'-');
-    pdf.save(`Tablero_BF_${todayFile}.pdf`);
+    const d = new Date().toLocaleDateString('es-PY').replace(/\//g,'-');
+    pdf.save(`Tablero_BF_${d}.pdf`);
 
   } catch (err) {
-    console.error('Error exportando PDF:', err);
-    alert('No se pudo generar el PDF: ' + err.message);
+    console.error('Export error:', err);
+    alert('Error al generar el PDF: ' + err.message);
   } finally {
     if (btn) { btn.textContent = 'Exportar PDF'; btn.disabled = false; }
   }
